@@ -1,60 +1,121 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+<div align="center">
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="300" alt="Laravel Logo">
+  <br>
+  <h1>🌴 Marme Villa - Backend & Admin Console</h1>
+  <p><strong>Sistem Manajemen Properti & Dasbor Admin Berbasis Laravel + React (Inertia.js)</strong></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+  <p>
+    <a href="https://laravel.com"><img src="https://img.shields.io/badge/Laravel-11-FF2D20.svg?style=flat&logo=laravel" alt="Laravel 11"></a>
+    <a href="https://react.dev"><img src="https://img.shields.io/badge/React-18-61DAFB.svg?style=flat&logo=react&logoColor=black" alt="React 18"></a>
+    <a href="https://inertiajs.com"><img src="https://img.shields.io/badge/Inertia.js-Modern_Monolith-9553E9.svg?style=flat&logo=inertia" alt="Inertia.js"></a>
+    <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC.svg?style=flat&logo=tailwind-css" alt="Tailwind CSS"></a>
+  </p>
+</div>
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## ✨ Tentang Proyek
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**Marme Villa Backend** adalah inti dari sistem manajemen properti untuk *Javanese Villa Escapes*. Repositori ini tidak hanya menyediakan API yang tangguh, namun juga memiliki antarmuka (UI) Dasbor Admin *Full-stack* yang dibangun menggunakan konsep *Modern Monolith* (Inertia.js). 
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+Dengan arsitektur ini, Anda mendapatkan kecepatan dan *Developer Experience* (DX) dari **React (SPA)** tanpa kerumitan membangun REST API terpisah secara manual—seluruh *routing* dan otorisasi tetap ditangani secara elegan oleh **Laravel**.
 
-## Learning Laravel
+## 🚀 Fitur Utama Dasbor Admin
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+Sistem admin dirancang dengan antarmuka yang sangat modern, bersih (UI premium), dan 100% responsif (termasuk *bottom-sheet modals* yang dioptimasi untuk sentuhan di layar HP).
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- 🏡 **Manajemen Villa (CRUD)**: Kelola data villa, fasilitas, detail lokasi, dan galeri foto dengan sangat mudah.
+- 💰 **Sistem Aturan Harga Cerdas**:
+  - Penetapan *Base Price*.
+  - *Toggle* otomatis untuk kenaikan harga di Akhir Pekan (*Weekend Premium*).
+  - Manajemen aturan rentang tanggal khusus (*Custom Date Range*) untuk *High Season* / Libur Nasional (misal: Lebaran, Tahun Baru).
+- 🎟️ **Manajemen Voucher Diskon**: 
+  - Buat kode voucher promosi dengan potongan nominal (Rp).
+  - Pembatasan masa aktif (*start & end date*) menggunakan *Range Date Picker*.
+  - Kuota batas penggunaan voucher (*Usage Limits*).
+  - *Tracking* jumlah pemakaian (*Redeemed*).
 
-## Laravel Sponsors
+## 🛠️ Tech Stack
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+- **Framework**: [Laravel 11](https://laravel.com/)
+- **Frontend Engine**: [Inertia.js](https://inertiajs.com/)
+- **UI Library**: [React.js](https://reactjs.org/)
+- **Styling**: [Tailwind CSS v3](https://tailwindcss.com/)
+- **Komponen**: *Custom Design System* + [Radix UI](https://www.radix-ui.com/) / [shadcn/ui](https://ui.shadcn.com/) (Popovers, Calendars)
+- **Bundler**: [Vite](https://vitejs.dev/)
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## 💻 Panduan Instalasi (Development)
 
-## Contributing
+Untuk menjalankan proyek ini di *local machine* Anda, ikuti langkah-langkah berikut:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Prasyarat
+- PHP >= 8.2
+- Composer
+- Node.js & npm (Disarankan Node v18+)
+- MySQL atau PostgreSQL
 
-## Code of Conduct
+### Langkah-langkah
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+1. **Clone repositori ini:**
+   ```bash
+   git clone https://github.com/Dulcoon/marmevilla-be.git
+   cd marmevilla-be
+   ```
 
-## Security Vulnerabilities
+2. **Install dependensi PHP & Node.js:**
+   ```bash
+   composer install
+   npm install
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+3. **Pengaturan Environment:**
+   Salin file konfigurasi lalu buat *application key*:
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+   *Penting:* Jangan lupa atur konfigurasi *Database* Anda (`DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) di dalam file `.env`.
 
-## License
+4. **Jalankan Migrasi Database:**
+   ```bash
+   php artisan migrate --seed
+   ```
+   *(Opsional)* `--seed` digunakan jika Anda sudah memiliki *Database Seeder* untuk data admin bawaan.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
-# marmevilla-be
+5. **Link Storage (Untuk Foto/Galeri):**
+   ```bash
+   php artisan storage:link
+   ```
+
+6. **Jalankan Server Lokal:**
+   Anda perlu menjalankan **2 terminal** secara bersamaan.
+   
+   **Terminal 1 (Backend - PHP):**
+   ```bash
+   php artisan serve
+   ```
+   **Terminal 2 (Frontend - Vite):**
+   ```bash
+   npm run dev
+   ```
+
+7. **Akses Aplikasi:**
+   Buka browser Anda dan kunjungi `http://127.0.0.1:8000/admin`.
+
+---
+
+## 🎨 Arsitektur & Bahasa Desain
+
+Kami menerapkan bahasa desain antarmuka yang sangat spesifik dan seragam (*Unified Design Language*):
+- Penggunaan warna *earth-tone* yang premium (Coklat Kopi, Emas/Mustard, Putih Bersih).
+- Efek *Ghost Border* dan *Ambient Shadows* untuk menciptakan kesan *floating* (melayang) yang elegan pada kartu.
+- Tipografi menggunakan **Manrope** (Headings) dan **Plus Jakarta Sans** (Body) untuk keterbacaan yang berkelas.
+- Transisi *Micro-interactions* (seperti efek *scale down* pada tombol ketika ditekan).
+
+---
+
+<div align="center">
+  <p>Dibuat dengan ❤️ untuk memberikan pengalaman liburan terbaik.</p>
+</div>
