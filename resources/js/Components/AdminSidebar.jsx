@@ -13,7 +13,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
     ];
 
     const footerItems = [
-        { name: 'Pengaturan', icon: 'settings', href: '#', active: false },
+        { name: 'Pengaturan', icon: 'settings', href: route('admin.settings.index'), active: url.startsWith('/admin/settings') },
         { name: 'Pusat Bantuan', icon: 'help', href: '#', active: false },
     ];
 

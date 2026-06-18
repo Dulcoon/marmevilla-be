@@ -135,12 +135,11 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
                             <div className="relative">
                                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant font-body-md">Rp</span>
                                 <input 
-                                    type="number"
+                                    type="text"
                                     className="w-full border border-outline-variant rounded-lg pl-10 pr-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-primary font-body-md"
-                                    placeholder="100000"
-                                    min="0"
-                                    value={data.discount_amount}
-                                    onChange={e => setData('discount_amount', e.target.value)}
+                                    placeholder="100.000"
+                                    value={data.discount_amount !== '' && data.discount_amount !== null ? parseInt(data.discount_amount).toLocaleString('id-ID') : ''}
+                                    onChange={e => setData('discount_amount', e.target.value.replace(/\D/g, ''))}
                                     required
                                 />
                             </div>

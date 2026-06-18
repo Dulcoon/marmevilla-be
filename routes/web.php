@@ -39,6 +39,10 @@ Route::middleware('auth')->group(function () {
 
         // Voucher Routes
         Route::resource('vouchers', \App\Http\Controllers\VoucherController::class)->except(['create', 'show', 'edit']);
+
+        // Settings Routes
+        Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
+        Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
     });
 });
 

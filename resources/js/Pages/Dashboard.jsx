@@ -181,9 +181,9 @@ export default function Dashboard() {
 
                 {/* Recent Bookings Table */}
                 <div className="bg-white rounded-xl ghost-border ambient-shadow overflow-hidden">
-                    <div className="p-4 sm:p-6 border-b border-outline-variant flex justify-between items-center">
+                    <div className="p-4 sm:p-6 border-b border-outline-variant/50 flex justify-between items-center">
                         <h3 className="text-xl sm:text-headline-md font-bold text-primary">Booking Terbaru</h3>
-                        <a className="text-primary font-button text-sm sm:text-button hover:underline" href="#">Lihat Semua</a>
+                        <a className="text-on-surface-variant font-medium text-sm hover:underline" href="#">Lihat Semua</a>
                     </div>
                     {/* Desktop Table View */}
                     <div className="hidden md:block overflow-x-auto">
@@ -206,12 +206,12 @@ export default function Dashboard() {
                                             idx !== bookings.length - 1 ? 'border-b border-outline-variant/50' : ''
                                         }`}
                                     >
-                                        <td className="py-4 px-4 sm:px-6 font-mono text-primary">{booking.code}</td>
-                                        <td className="py-4 px-4 sm:px-6 font-medium">{booking.guest}</td>
+                                        <td className="py-4 px-4 sm:px-6 font-mono text-primary font-semibold">{booking.code}</td>
+                                        <td className="py-4 px-4 sm:px-6 font-bold">{booking.guest}</td>
                                         <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{booking.villa}</td>
                                         <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{booking.dates}</td>
                                         <td className="py-4 px-4 sm:px-6">
-                                            <span className={`inline-block px-3 py-1.5 rounded-full text-xs font-semibold ${booking.statusStyle}`}>
+                                            <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-bold ${booking.statusStyle}`}>
                                                 {booking.status}
                                             </span>
                                         </td>
@@ -229,27 +229,32 @@ export default function Dashboard() {
                     {/* Mobile List View */}
                     <div className="md:hidden flex flex-col divide-y divide-outline-variant/50">
                         {bookings.map((booking, idx) => (
-                            <div key={idx} className="p-4 flex flex-col gap-3 hover:bg-surface-container-lowest transition-colors">
-                                <div className="flex justify-between items-start gap-2">
-                                    <div>
-                                        <span className="font-mono text-primary text-xs font-semibold block mb-1">{booking.code}</span>
-                                        <p className="font-bold text-base text-on-surface">{booking.guest}</p>
-                                    </div>
-                                    <span className={`px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${booking.statusStyle}`}>
+                            <div key={idx} className="p-5 flex flex-col gap-4 bg-white hover:bg-surface-container-lowest transition-colors">
+                                {/* Top Row: ID & Status */}
+                                <div className="flex justify-between items-center">
+                                    <span className="font-mono text-on-surface-variant text-[11px] font-bold">{booking.code}</span>
+                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${booking.statusStyle}`}>
                                         {booking.status}
                                     </span>
                                 </div>
-                                <div className="flex justify-between items-center text-sm text-on-surface-variant bg-surface-bright rounded-lg p-3">
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[16px] text-primary">villa</span>
+                                
+                                {/* Guest Name */}
+                                <p className="font-bold text-[17px] text-primary -mt-2">{booking.guest}</p>
+                                
+                                {/* Detail Box */}
+                                <div className="flex justify-between items-center text-sm text-on-surface-variant bg-[#F9F7F2] rounded-xl p-3.5">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[18px]">villa</span>
                                         <span className="font-medium">{booking.villa}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <span className="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
-                                        <span>{booking.dates}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                                        <span className="font-medium">{booking.dates}</span>
                                     </div>
                                 </div>
-                                <button className="w-full mt-1 py-2 text-sm font-semibold text-primary border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+                                
+                                {/* Action Button */}
+                                <button className="w-full py-2.5 text-sm font-semibold text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
                                     Lihat Detail
                                 </button>
                             </div>

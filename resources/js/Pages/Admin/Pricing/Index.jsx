@@ -217,11 +217,11 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <div className="relative">
                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 font-body-md text-on-surface-variant">Rp</span>
                                             <input 
-                                                type="number" 
+                                                type="text" 
                                                 className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#D4B47D] focus:ring-0 pl-12 pr-4 py-2 font-body-md rounded-t-md transition-colors" 
-                                                placeholder="4500000"
-                                                value={data.custom_price}
-                                                onChange={e => setData('custom_price', e.target.value)}
+                                                placeholder="4.500.000"
+                                                value={data.custom_price !== '' && data.custom_price !== null ? parseInt(data.custom_price).toLocaleString('id-ID') : ''}
+                                                onChange={e => setData('custom_price', e.target.value.replace(/\D/g, ''))}
                                                 required
                                             />
                                         </div>

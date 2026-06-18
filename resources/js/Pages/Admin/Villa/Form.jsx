@@ -278,17 +278,17 @@ export default function Form({ villa }) {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
                             <div>
                                 <InputLabel htmlFor="base_price" value="Harga Dasar (Rp) *" />
-                                <input id="base_price" type="number" value={data.base_price} onChange={e => setData('base_price', e.target.value)} className={inputClasses} required />
+                                <input id="base_price" type="text" value={data.base_price !== '' && data.base_price !== null ? parseInt(data.base_price).toLocaleString('id-ID') : ''} onChange={e => setData('base_price', e.target.value.replace(/\D/g, ''))} className={inputClasses} required placeholder="Cth: 2.500.000" />
                                 <InputError message={errors.base_price} />
                             </div>
                             <div>
                                 <InputLabel htmlFor="weekend_price" value="Harga Weekend (Rp) *" />
-                                <input id="weekend_price" type="number" value={data.weekend_price} onChange={e => setData('weekend_price', e.target.value)} className={inputClasses} required />
+                                <input id="weekend_price" type="text" value={data.weekend_price !== '' && data.weekend_price !== null ? parseInt(data.weekend_price).toLocaleString('id-ID') : ''} onChange={e => setData('weekend_price', e.target.value.replace(/\D/g, ''))} className={inputClasses} required placeholder="Cth: 3.000.000" />
                                 <InputError message={errors.weekend_price} />
                             </div>
                             <div>
                                 <InputLabel htmlFor="extra_guest_fee" value="Biaya Ekstra Tamu (Rp) *" />
-                                <input id="extra_guest_fee" type="number" value={data.extra_guest_fee} onChange={e => setData('extra_guest_fee', e.target.value)} className={inputClasses} required />
+                                <input id="extra_guest_fee" type="text" value={data.extra_guest_fee !== '' && data.extra_guest_fee !== null ? parseInt(data.extra_guest_fee).toLocaleString('id-ID') : ''} onChange={e => setData('extra_guest_fee', e.target.value.replace(/\D/g, ''))} className={inputClasses} required placeholder="Cth: 250.000" />
                                 <InputError message={errors.extra_guest_fee} />
                             </div>
                         </div>
