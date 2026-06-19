@@ -25,6 +25,9 @@ Route::middleware('auth')->group(function () {
 
     // Admin Routes
     Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('Dashboard');
+        })->name('dashboard');
         Route::resource('villas', \App\Http\Controllers\VillaController::class);
         
         // Villa Images Routes
