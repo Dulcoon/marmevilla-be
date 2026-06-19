@@ -26,8 +26,10 @@ class VillaController extends Controller
      */
     public function create()
     {
+        $facilities = \App\Models\VillaFacility::all();
         return Inertia::render('Admin/Villa/Form', [
-            'villa' => new Villa()
+            'villa' => new Villa(),
+            'all_facilities' => $facilities
         ]);
     }
 
@@ -49,6 +51,8 @@ class VillaController extends Controller
             'capacity' => 'required|integer|min:1',
             'max_guests' => 'nullable|integer|min:1',
             'features' => 'nullable|array',
+            'facilities_ids' => 'nullable|array',
+            'facilities_ids.*' => 'exists:villa_facilities,id',
             'base_price' => 'required|numeric|min:0',
             'weekend_price' => 'required|numeric|min:0',
             'extra_guest_fee' => 'required|numeric|min:0',
@@ -63,7 +67,7 @@ class VillaController extends Controller
         if (empty($validated['long_description'])) $validated['long_description'] = null;
         if (empty($validated['features'])) $validated['features'] = null;
 
-        $villaData = \Illuminate\Support\Arr::except($validated, ['images']);
+        $villaData = \Illuminate\Support\Arr::except($validated, ['images', 'facilities_ids']);
         $villa = Villa::create($villaData);
  
         // Handle image uploads
@@ -79,6 +83,11 @@ class VillaController extends Controller
             }
         }
 
+        // Sync facilities
+        if ($request->has('facilities_ids')) {
+            $villa->facilities()->sync($request->input('facilities_ids', []));
+        }
+
         return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil ditambahkan.');
     }
 
@@ -87,9 +96,11 @@ class VillaController extends Controller
      */
     public function edit(Villa $villa)
     {
-        $villa->load('images');
+        $villa->load(['images', 'facilities']);
+        $facilities = \App\Models\VillaFacility::all();
         return Inertia::render('Admin/Villa/Form', [
-            'villa' => $villa
+            'villa' => $villa,
+            'all_facilities' => $facilities
         ]);
     }
 
@@ -111,6 +122,8 @@ class VillaController extends Controller
             'capacity' => 'required|integer|min:1',
             'max_guests' => 'nullable|integer|min:1',
             'features' => 'nullable|array',
+            'facilities_ids' => 'nullable|array',
+            'facilities_ids.*' => 'exists:villa_facilities,id',
             'base_price' => 'required|numeric|min:0',
             'weekend_price' => 'required|numeric|min:0',
             'extra_guest_fee' => 'required|numeric|min:0',
@@ -128,7 +141,7 @@ class VillaController extends Controller
         if (empty($validated['long_description'])) $validated['long_description'] = null;
         if (empty($validated['features'])) $validated['features'] = null;
 
-        $villaData = \Illuminate\Support\Arr::except($validated, ['new_images']);
+        $villaData = \Illuminate\Support\Arr::except($validated, ['new_images', 'facilities_ids']);
         $villa->update($villaData);
 
         // Handle new image uploads
@@ -144,6 +157,11 @@ class VillaController extends Controller
                 ]);
                 $hasPrimary = true; // After the first new image is set as primary, subsequent ones won't be
             }
+        }
+
+        // Sync facilities
+        if ($request->has('facilities_ids')) {
+            $villa->facilities()->sync($request->input('facilities_ids', []));
         }
 
         return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil diperbarui.');

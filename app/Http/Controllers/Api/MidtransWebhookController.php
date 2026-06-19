@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\BookingConfirmed;
 
 class MidtransWebhookController extends Controller
 {
@@ -31,23 +33,34 @@ class MidtransWebhookController extends Controller
 
         if ($transactionStatus == 'capture') {
             if ($fraudStatus == 'challenge') {
-                $booking->update(['payment_status' => 'challenge']);
+                // Leave as pending, needs manual review
+                Log::warning('Midtrans: Transaction challenged', ['order_id' => $notification->order_id]);
             } else if ($fraudStatus == 'accept') {
+                $wasNotConfirmed = $booking->booking_status !== 'confirmed';
                 $booking->update([
-                    'payment_status' => 'success',
+                    'payment_status' => 'paid',
                     'booking_status' => 'confirmed'
                 ]);
+                if ($wasNotConfirmed) {
+                    Mail::to($booking->guest_email)->send(new BookingConfirmed($booking));
+                }
             }
         } else if ($transactionStatus == 'settlement') {
+            $wasNotConfirmed = $booking->booking_status !== 'confirmed';
             $booking->update([
-                'payment_status' => 'success',
+                'payment_status' => 'paid',
                 'booking_status' => 'confirmed'
             ]);
-        } else if ($transactionStatus == 'cancel' || $transactionStatus == 'deny' || $transactionStatus == 'expire') {
+            if ($wasNotConfirmed) {
+                Mail::to($booking->guest_email)->send(new BookingConfirmed($booking));
+            }
+        } else if (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $booking->update([
                 'payment_status' => 'failed',
                 'booking_status' => 'cancelled'
             ]);
+        } else if ($transactionStatus == 'refund') {
+            $booking->update(['payment_status' => 'refunded']);
         } else if ($transactionStatus == 'pending') {
             $booking->update(['payment_status' => 'pending']);
         }

@@ -15,7 +15,8 @@ class VoucherController extends Controller
         $vouchers = Voucher::latest()->get();
         
         $totalVouchers = $vouchers->count();
-        $activeVouchers = $vouchers->where('status', 'active')->count();
+        // 'status' is a computed attribute - can't use it in query, count from actual fields
+        $activeVouchers = $vouchers->filter(fn($v) => $v->status === 'active')->count();
         $totalRedeemed = $vouchers->sum('used_count');
 
         return Inertia::render('Admin/Voucher/Index', [

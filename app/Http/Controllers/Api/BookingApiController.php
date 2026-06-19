@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Setting;
 use App\Models\Villa;
 use App\Models\Voucher;
 use Carbon\Carbon;
@@ -37,7 +38,7 @@ class BookingApiController extends Controller
 
             foreach ($customPrices as $cp) {
                 if ($date->between(Carbon::parse($cp->start_date), Carbon::parse($cp->end_date))) {
-                    $currentPrice = $cp->price;
+                    $currentPrice = $cp->custom_price;
                     break;
                 }
             }
@@ -45,8 +46,8 @@ class BookingApiController extends Controller
             $basePriceTotal += $currentPrice;
         }
 
-        $extraGuests = max(0, $guests - $villa->base_guests);
-        $extraChargeTotal = $extraGuests * $villa->extra_person_charge * $period->count();
+        $extraGuests = max(0, $guests - $villa->capacity);
+        $extraChargeTotal = $extraGuests * $villa->extra_guest_fee * $period->count();
 
         return [
             'base_price_total' => $basePriceTotal,
@@ -77,12 +78,10 @@ class BookingApiController extends Controller
         $hasBooking = Booking::where('villa_id', $villa->id)
             ->whereIn('booking_status', ['confirmed', 'pending'])
             ->where(function ($query) use ($request) {
-                $query->whereBetween('check_in', [$request->check_in, $request->check_out])
-                      ->orWhereBetween('check_out', [$request->check_in, $request->check_out])
-                      ->orWhere(function ($q) use ($request) {
-                          $q->where('check_in', '<=', $request->check_in)
-                            ->where('check_out', '>=', $request->check_out);
-                      });
+                // A booking overlaps if its check_in is on or before the new check_out
+                // AND its check_out is on or after the new check_in
+                $query->where('check_in', '<=', $request->check_out)
+                      ->where('check_out', '>=', $request->check_in);
             })->exists();
 
         if ($hasBooking) {
@@ -96,22 +95,17 @@ class BookingApiController extends Controller
         if ($request->voucher_code) {
             $voucher = Voucher::where('code', $request->voucher_code)
                 ->where('is_active', true)
-                ->where('valid_from', '<=', now())
-                ->where('valid_until', '>=', now())
+                ->where('start_date', '<=', now())
+                ->where('end_date', '>=', now())
+                ->where(function ($query) {
+                    $query->whereNull('usage_limit')
+                          ->orWhereColumn('used_count', '<', 'usage_limit');
+                })
                 ->first();
 
             if ($voucher) {
-                if ($pricing['total'] >= $voucher->minimum_spend) {
-                    $voucherId = $voucher->id;
-                    if ($voucher->discount_type === 'percentage') {
-                        $discount = ($pricing['total'] * $voucher->discount_value) / 100;
-                        if ($voucher->max_discount) {
-                            $discount = min($discount, $voucher->max_discount);
-                        }
-                    } else {
-                        $discount = $voucher->discount_value;
-                    }
-                }
+                $voucherId = $voucher->id;
+                $discount = $voucher->discount_amount;
             }
         }
 
@@ -129,6 +123,32 @@ class BookingApiController extends Controller
         ]);
     }
 
+    public function getBookedDates($slug)
+    {
+        $villa = Villa::where('slug', $slug)->firstOrFail();
+
+        // Get all pending and confirmed bookings from today onwards
+        $bookings = Booking::where('villa_id', $villa->id)
+            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->where('check_out', '>', today())
+            ->get();
+
+        $bookedDates = [];
+
+        foreach ($bookings as $booking) {
+            $period = CarbonPeriod::create($booking->check_in, Carbon::parse($booking->check_out));
+            foreach ($period as $date) {
+                $bookedDates[] = $date->format('Y-m-d');
+            }
+        }
+
+        // Return unique dates
+        return response()->json([
+            'status' => 'success',
+            'data' => array_values(array_unique($bookedDates))
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -138,7 +158,7 @@ class BookingApiController extends Controller
             'guest_name' => 'required|string',
             'guest_email' => 'required|email',
             'guest_phone' => 'required|string',
-            'guest_count' => 'required|integer|min:1',
+            'guests' => 'required|integer|min:1',
             'special_requests' => 'nullable|string',
             'voucher_code' => 'nullable|string'
         ]);
@@ -170,7 +190,7 @@ class BookingApiController extends Controller
             'guest_email' => $request->guest_email,
             'guest_phone' => $request->guest_phone,
             'special_requests' => $request->special_requests,
-            'guest_count' => $request->guest_count,
+            'guest_count' => $request->guests,
             'extra_guests' => $pricing['extra_guests'],
             'base_price_total' => $pricing['base_price_total'],
             'extra_charge_total' => $pricing['extra_charge_total'],
@@ -188,6 +208,7 @@ class BookingApiController extends Controller
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
 
+        $expiryMinutes = Setting::where('key', 'midtrans_expiry_minutes')->value('value') ?? 1440;
 
         $params = [
             'transaction_details' => [
@@ -206,6 +227,10 @@ class BookingApiController extends Controller
                     'quantity' => 1,
                     'name' => 'Booking: ' . $villa->name . ' (' . $pricing['nights'] . ' nights)'
                 ]
+            ],
+            'expiry' => [
+                'unit' => 'minute',
+                'duration' => (int) $expiryMinutes
             ]
         ];
 

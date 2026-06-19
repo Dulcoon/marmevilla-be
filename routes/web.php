@@ -43,6 +43,12 @@ Route::middleware('auth')->group(function () {
         // Settings Routes
         Route::get('settings', [\App\Http\Controllers\Admin\SettingController::class, 'index'])->name('settings.index');
         Route::post('settings', [\App\Http\Controllers\Admin\SettingController::class, 'store'])->name('settings.store');
+
+        // Reservation Routes
+        Route::get('reservations', [\App\Http\Controllers\BookingController::class, 'index'])->name('reservations.index');
+        Route::get('reservations/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('reservations.show');
+        Route::patch('reservations/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('reservations.update-status');
+        Route::patch('reservations/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])->name('reservations.cancel');
     });
 });
 

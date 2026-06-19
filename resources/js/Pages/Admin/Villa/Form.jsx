@@ -4,7 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import { useState, useEffect } from 'react';
 
-export default function Form({ villa }) {
+export default function Form({ villa, all_facilities }) {
     const isEditing = !!villa.id;
 
     // Parse array fields or default to empty arrays with one empty string item
@@ -29,7 +29,8 @@ export default function Form({ villa }) {
         extra_guest_fee: villa.extra_guest_fee || '',
         weekend_enabled: villa.weekend_enabled ?? true,
         images: [],
-        new_images: []
+        new_images: [],
+        facilities_ids: villa.facilities ? villa.facilities.map(f => f.id) : []
     });
 
     const [localImages, setLocalImages] = useState([]);
@@ -256,6 +257,33 @@ export default function Form({ villa }) {
                             </button>
                             <InputError message={errors.features} />
                         </div>
+
+                        {all_facilities && all_facilities.length > 0 && (
+                            <div className="flex flex-col gap-2 mt-4">
+                                <InputLabel value="Fasilitas Kamar" />
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                                    {all_facilities.map(facility => (
+                                        <label key={facility.id} className="flex items-center gap-3 cursor-pointer select-none p-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+                                            <input
+                                                type="checkbox"
+                                                checked={data.facilities_ids.includes(facility.id)}
+                                                onChange={(e) => {
+                                                    const checked = e.target.checked;
+                                                    if (checked) {
+                                                        setData('facilities_ids', [...data.facilities_ids, facility.id]);
+                                                    } else {
+                                                        setData('facilities_ids', data.facilities_ids.filter(id => id !== facility.id));
+                                                    }
+                                                }}
+                                                className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4"
+                                            />
+                                            <span className="text-sm text-on-surface">{facility.name}</span>
+                                        </label>
+                                    ))}
+                                </div>
+                                <InputError message={errors.facilities_ids} />
+                            </div>
+                        )}
                     </div>
 
                     {/* SECTION: Kapasitas & Harga */}

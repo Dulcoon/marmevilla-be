@@ -8,7 +8,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
         { name: 'Kelola Villa', icon: 'villa', href: route('admin.villas.index'), active: url.startsWith('/admin/villas') },
         { name: 'Aturan Harga', icon: 'payments', href: route('admin.pricing.index'), active: url.startsWith('/admin/pricing') },
         { name: 'Voucher', icon: 'confirmation_number', href: route('admin.vouchers.index'), active: url.startsWith('/admin/vouchers') },
-        { name: 'Reservasi', icon: 'calendar_month', href: '#', active: false },
+        { name: 'Reservasi', icon: 'calendar_month', href: route('admin.reservations.index'), active: url.startsWith('/admin/reservations') },
         { name: 'Laporan', icon: 'analytics', href: '#', active: false },
     ];
 

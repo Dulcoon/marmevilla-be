@@ -10,7 +10,7 @@ class VillaApiController extends Controller
 {
     public function index()
     {
-        $villas = Villa::with('images')->get();
+        $villas = Villa::with(['images', 'facilities'])->get();
         return response()->json([
             'status' => 'success',
             'data' => $villas
@@ -19,7 +19,7 @@ class VillaApiController extends Controller
 
     public function show($slug)
     {
-        $villa = Villa::with('images')->where('slug', $slug)->firstOrFail();
+        $villa = Villa::with(['images', 'facilities'])->where('slug', $slug)->firstOrFail();
         return response()->json([
             'status' => 'success',
             'data' => $villa
