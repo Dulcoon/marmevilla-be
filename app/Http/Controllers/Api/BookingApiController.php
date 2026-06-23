@@ -78,10 +78,10 @@ class BookingApiController extends Controller
         $hasBooking = Booking::where('villa_id', $villa->id)
             ->whereIn('booking_status', ['confirmed', 'pending'])
             ->where(function ($query) use ($request) {
-                // A booking overlaps if its check_in is on or before the new check_out
-                // AND its check_out is on or after the new check_in
-                $query->where('check_in', '<=', $request->check_out)
-                      ->where('check_out', '>=', $request->check_in);
+                // A booking overlaps if its check_in is BEFORE the new check_out
+                // AND its check_out is AFTER the new check_in
+                $query->where('check_in', '<', $request->check_out)
+                      ->where('check_out', '>', $request->check_in);
             })->exists();
 
         if ($hasBooking) {
@@ -136,7 +136,7 @@ class BookingApiController extends Controller
         $bookedDates = [];
 
         foreach ($bookings as $booking) {
-            $period = CarbonPeriod::create($booking->check_in, Carbon::parse($booking->check_out));
+            $period = CarbonPeriod::create($booking->check_in, Carbon::parse($booking->check_out)->subDay());
             foreach ($period as $date) {
                 $bookedDates[] = $date->format('Y-m-d');
             }
