@@ -2,7 +2,8 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 
 export default function Form({ villa, all_facilities }) {
     const isEditing = !!villa.id;
@@ -30,12 +31,21 @@ export default function Form({ villa, all_facilities }) {
         weekend_enabled: villa.weekend_enabled ?? true,
         images: [],
         new_images: [],
+        image_albums: [],
+        new_image_albums: [],
         facilities_ids: villa.facilities ? villa.facilities.map(f => f.id) : []
     });
 
     const [localImages, setLocalImages] = useState([]);
+    const [customAlbums, setCustomAlbums] = useState([]);
 
-    // Clean up local image URLs on unmount
+    const allAlbums = useMemo(() => {
+        const defaults = ["Lainnya"];
+        const savedAlbums = (villa?.images || []).map(img => img.album).filter(Boolean);
+        const localAlbums = localImages.map(img => img.album).filter(Boolean);
+        return [...new Set([...defaults, ...savedAlbums, ...localAlbums, ...customAlbums])];
+    }, [villa, localImages, customAlbums]);
+
     useEffect(() => {
         return () => {
             localImages.forEach(img => URL.revokeObjectURL(img.preview));
@@ -44,14 +54,14 @@ export default function Form({ villa, all_facilities }) {
 
     const submit = (e) => {
         e.preventDefault();
-        
+
         transform((currentData) => {
             const cleanData = {
                 ...currentData,
                 long_description: currentData.long_description.filter(item => item.trim() !== ''),
                 features: currentData.features.filter(item => item.trim() !== '')
             };
-            
+
             if (cleanData.long_description.length === 0) cleanData.long_description = null;
             if (cleanData.features.length === 0) cleanData.features = null;
 
@@ -71,18 +81,24 @@ export default function Form({ villa, all_facilities }) {
         }
     };
 
-    const handleImageSelect = (e) => {
+    const handleImageSelect = (e, targetAlbum = 'Lainnya') => {
         const files = Array.from(e.target.files);
         const newPreviews = files.map(file => ({
             file,
-            preview: URL.createObjectURL(file)
+            preview: URL.createObjectURL(file),
+            album: targetAlbum
         }));
-        
+
         setLocalImages(prev => [...prev, ...newPreviews]);
-        
+
         const field = isEditing ? 'new_images' : 'images';
-        setData(field, [...data[field], ...files]);
-        
+        const albumField = isEditing ? 'new_image_albums' : 'image_albums';
+        setData(prev => ({
+            ...prev,
+            [field]: [...prev[field], ...files],
+            [albumField]: [...prev[albumField], ...Array(files.length).fill(targetAlbum)]
+        }));
+
         // Reset file input so same files can be selected again if needed
         e.target.value = '';
     };
@@ -90,28 +106,77 @@ export default function Form({ villa, all_facilities }) {
     const removeLocalImage = (index) => {
         const fileToRemove = localImages[index];
         URL.revokeObjectURL(fileToRemove.preview);
-        
+
         const updatedLocal = localImages.filter((_, i) => i !== index);
         setLocalImages(updatedLocal);
-        
+
         const field = isEditing ? 'new_images' : 'images';
-        setData(field, data[field].filter((_, i) => i !== index));
+        const albumField = isEditing ? 'new_image_albums' : 'image_albums';
+        setData(prev => ({
+            ...prev,
+            [field]: prev[field].filter((_, i) => i !== index),
+            [albumField]: prev[albumField].filter((_, i) => i !== index)
+        }));
+    };
+
+    const updateLocalImageAlbum = (index, value) => {
+        const updatedLocal = [...localImages];
+        updatedLocal[index].album = value;
+        setLocalImages(updatedLocal);
+
+        const albumField = isEditing ? 'new_image_albums' : 'image_albums';
+        setData(albumField, data[albumField].map((item, i) => i === index ? value : item));
     };
 
     const removeExistingImage = (imageId) => {
         if (confirm('Apakah Anda yakin ingin menghapus foto ini?')) {
-            router.delete(route('admin.villas.images.destroy', [villa.id, imageId]), { 
-                preserveScroll: true, 
-                preserveState: true 
+            router.delete(route('admin.villas.images.destroy', [villa.id, imageId]), {
+                preserveScroll: true,
+                preserveState: true
             });
         }
     };
 
     const setPrimaryImage = (imageId) => {
-        router.patch(route('admin.villas.images.set-primary', [villa.id, imageId]), {}, { 
-            preserveScroll: true, 
-            preserveState: true 
+        router.patch(route('admin.villas.images.set-primary', [villa.id, imageId]), {}, {
+            preserveScroll: true,
+            preserveState: true
         });
+    };
+
+    const updateExistingImageAlbum = (imageId, newAlbum) => {
+        router.patch(route('admin.villas.images.update-album', [villa.id, imageId]), { album: newAlbum }, {
+            preserveScroll: true,
+            preserveState: true
+        });
+    };
+
+    const renameAlbum = async (oldName, newName) => {
+        if (!newName || newName.trim() === '' || newName === oldName || oldName === 'Lainnya') return;
+        
+        // Update custom albums
+        setCustomAlbums(prev => prev.map(a => a === oldName ? newName : a));
+
+        // Update local images
+        const updatedLocal = localImages.map(img => (img.album || 'Lainnya') === oldName ? { ...img, album: newName } : img);
+        setLocalImages(updatedLocal);
+
+        // Update data
+        const albumField = isEditing ? 'new_image_albums' : 'image_albums';
+        setData(albumField, data[albumField].map(a => (a || 'Lainnya') === oldName ? newName : a));
+
+        // Update existing images via API
+        const savedImgs = (villa?.images || []).filter(img => (img.album || 'Lainnya') === oldName);
+        if (savedImgs.length > 0) {
+            try {
+                await Promise.all(
+                    savedImgs.map(img => axios.patch(route('admin.villas.images.update-album', [villa.id, img.id]), { album: newName }))
+                );
+                router.reload({ only: ['villa'] });
+            } catch (err) {
+                console.error("Gagal update album", err);
+            }
+        }
     };
 
     // Helper for array inputs
@@ -138,12 +203,12 @@ export default function Form({ villa, all_facilities }) {
             <Head title={`${isEditing ? 'Edit' : 'Tambah'} Villa - Admin Marme Villa`} />
 
             <div className="p-4 sm:p-8 max-w-[800px] mx-auto w-full flex flex-col gap-6 sm:gap-8">
-                
+
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="flex items-start sm:items-center gap-3 sm:gap-4">
-                        <Link 
-                            href={route('admin.villas.index')} 
+                        <Link
+                            href={route('admin.villas.index')}
                             className="mt-1 sm:mt-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary transition-colors shrink-0 border border-transparent hover:border-outline-variant/30"
                             title="Kembali ke Daftar"
                         >
@@ -158,11 +223,11 @@ export default function Form({ villa, all_facilities }) {
 
                 {/* Form Wrapper */}
                 <form onSubmit={submit} className="flex flex-col gap-6 sm:gap-8">
-                    
+
                     {/* SECTION: Informasi Dasar */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-4">
                         <h3 className="text-headline-sm font-bold text-primary border-b border-outline-variant/50 pb-2">Informasi Dasar</h3>
-                        
+
                         <div>
                             <InputLabel htmlFor="name" value="Nama Villa *" />
                             <input id="name" type="text" value={data.name} onChange={e => setData('name', e.target.value)} className={inputClasses} required />
@@ -191,10 +256,10 @@ export default function Form({ villa, all_facilities }) {
                             <InputLabel value="Deskripsi Lengkap (Per Paragraf)" />
                             {data.long_description.map((item, idx) => (
                                 <div key={`long_desc_${idx}`} className="flex gap-2 items-start">
-                                    <textarea 
-                                        value={item} 
-                                        onChange={e => updateArrayItem('long_description', idx, e.target.value)} 
-                                        className={inputClasses} rows="2" 
+                                    <textarea
+                                        value={item}
+                                        onChange={e => updateArrayItem('long_description', idx, e.target.value)}
+                                        className={inputClasses} rows="2"
                                         placeholder={`Paragraf ${idx + 1}`}
                                     />
                                     <button type="button" onClick={() => removeArrayItem('long_description', idx)} className="mt-1.5 p-2.5 bg-error/10 text-error rounded-lg hover:bg-error/20 transition-colors">
@@ -212,7 +277,7 @@ export default function Form({ villa, all_facilities }) {
                     {/* SECTION: Spesifikasi Fisik */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-4">
                         <h3 className="text-headline-sm font-bold text-primary border-b border-outline-variant/50 pb-2">Spesifikasi Bangunan</h3>
-                        
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel htmlFor="size" value="Luas Bangunan/Tanah (m²)" />
@@ -240,11 +305,11 @@ export default function Form({ villa, all_facilities }) {
                             <InputLabel value="Fitur Unggulan" />
                             {data.features.map((item, idx) => (
                                 <div key={`feature_${idx}`} className="flex gap-2 items-center">
-                                    <input 
+                                    <input
                                         type="text"
-                                        value={item} 
-                                        onChange={e => updateArrayItem('features', idx, e.target.value)} 
-                                        className={inputClasses} 
+                                        value={item}
+                                        onChange={e => updateArrayItem('features', idx, e.target.value)}
+                                        className={inputClasses}
                                         placeholder="Cth: Dapur lengkap dengan alat masak"
                                     />
                                     <button type="button" onClick={() => removeArrayItem('features', idx)} className="mt-1.5 p-2.5 bg-error/10 text-error rounded-lg hover:bg-error/20 transition-colors">
@@ -289,7 +354,7 @@ export default function Form({ villa, all_facilities }) {
                     {/* SECTION: Kapasitas & Harga */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-4">
                         <h3 className="text-headline-sm font-bold text-primary border-b border-outline-variant/50 pb-2">Kapasitas & Harga</h3>
-                        
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <InputLabel htmlFor="capacity" value="Kapasitas Standar (Orang) *" />
@@ -339,91 +404,132 @@ export default function Form({ villa, all_facilities }) {
 
                     {/* SECTION: Galeri Foto */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-4">
-                        <h3 className="text-headline-sm font-bold text-primary border-b border-outline-variant/50 pb-2">Galeri Foto</h3>
-                        
-                        {isEditing && villa.images && villa.images.length > 0 && (
-                            <div className="mb-4">
-                                <h4 className="text-sm font-semibold mb-2">Foto Tersimpan</h4>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {villa.images.map((img) => (
-                                        <div key={img.id} className="relative aspect-square rounded-lg overflow-hidden border border-outline-variant group bg-surface-container-low">
-                                            <img src={img.image_url} alt="Villa" className="w-full h-full object-cover" />
-                                            
-                                            {img.is_primary && (
-                                                <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                                                    UTAMA
-                                                </div>
-                                            )}
-                                            
-                                            {/* Mobile-friendly action buttons overlay */}
-                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex justify-between items-end gap-2">
-                                                {!img.is_primary ? (
-                                                    <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
-                                                        <span className="material-symbols-outlined text-[20px]">star</span>
-                                                    </button>
-                                                ) : <div></div>}
-                                                <button type="button" onClick={() => removeExistingImage(img.id)} className="text-error hover:text-error/80 flex items-center bg-black/40 rounded p-1">
-                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        <div>
-                            <h4 className="text-sm font-semibold mb-2">{isEditing ? 'Tambah Foto Baru' : 'Pilih Foto'}</h4>
-                            
-                            {/* Upload Button/Zone */}
-                            <div className="relative border-2 border-dashed border-outline-variant rounded-xl p-8 text-center hover:bg-surface-container-lowest transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[150px]">
-                                <input 
-                                    type="file" 
-                                    multiple 
-                                    accept="image/jpeg,image/png,image/webp,image/jpg" 
-                                    onChange={handleImageSelect}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                />
-                                <span className="material-symbols-outlined text-4xl text-primary mb-2">add_photo_alternate</span>
-                                <p className="text-sm font-medium text-on-surface">Tap untuk memilih foto atau Drag & Drop ke sini</p>
-                                <p className="text-xs text-on-surface-variant mt-1">Maksimal 5MB per foto (JPG, PNG, WEBP)</p>
-                            </div>
-
-                            <InputError message={errors.images} className="mt-2" />
-                            <InputError message={errors.new_images} className="mt-2" />
-                            <InputError message={errors['images.0']} className="mt-2" />
-                            <InputError message={errors['new_images.0']} className="mt-2" />
-
-                            {/* Local Previews */}
-                            {localImages.length > 0 && (
-                                <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                                    {localImages.map((img, idx) => (
-                                        <div key={idx} className="relative aspect-square rounded-lg overflow-hidden border border-outline-variant bg-surface-container-low">
-                                            <img src={img.preview} alt="Preview" className="w-full h-full object-cover" />
-                                            
-                                            {!isEditing && idx === 0 && (
-                                                <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">
-                                                    UTAMA
-                                                </div>
-                                            )}
-
-                                            <button 
-                                                type="button" 
-                                                onClick={() => removeLocalImage(idx)} 
-                                                className="absolute top-2 right-2 bg-error text-white rounded-full p-1.5 shadow-md hover:bg-error/90 flex items-center justify-center"
-                                            >
-                                                <span className="material-symbols-outlined text-[16px]">close</span>
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                        <div className="flex justify-between items-center border-b border-outline-variant/50 pb-2 mb-4">
+                            <h3 className="text-headline-sm font-bold text-primary">Galeri Foto</h3>
+                            <button 
+                                type="button" 
+                                onClick={() => {
+                                    const name = prompt("Masukkan Nama Album Baru:");
+                                    if (name && name.trim() && !allAlbums.includes(name.trim())) {
+                                        setCustomAlbums(prev => [...prev, name.trim()]);
+                                    }
+                                }}
+                                className="text-sm bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1"
+                            >
+                                <span className="material-symbols-outlined text-[18px]">add</span> Album Baru
+                            </button>
                         </div>
+
+                        {allAlbums.map(albumName => {
+                            const savedImgs = (villa?.images || []).filter(img => (img.album || 'Lainnya') === albumName);
+                            const localImgs = localImages.map((img, idx) => ({ ...img, globalIndex: idx })).filter(img => (img.album || 'Lainnya') === albumName);
+
+                            if (savedImgs.length === 0 && localImgs.length === 0 && albumName !== 'Lainnya' && !customAlbums.includes(albumName)) {
+                                return null;
+                            }
+
+                            return (
+                                <div key={albumName} className="border border-outline-variant rounded-xl p-4 bg-surface-container-lowest">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <div className="flex items-center gap-2 w-full max-w-sm">
+                                            <span className="material-symbols-outlined text-primary">photo_library</span>
+                                            <input
+                                                type="text"
+                                                defaultValue={albumName}
+                                                onBlur={(e) => renameAlbum(albumName, e.target.value)}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }}
+                                                className="font-bold text-lg text-primary border-none bg-transparent focus:ring-0 p-0 hover:bg-surface-variant/20 rounded px-2 w-full"
+                                                disabled={albumName === 'Lainnya'}
+                                                title={albumName === 'Lainnya' ? "Album default tidak dapat diubah namanya" : "Klik untuk mengubah nama album"}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                        {/* Render Saved Images */}
+                                        {savedImgs.map((img) => (
+                                            <div key={`saved-${img.id}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
+                                                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
+                                                    <img src={img.image_url} alt="Villa" className="w-full h-full object-cover" />
+                                                    {img.is_primary && (
+                                                        <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">UTAMA</div>
+                                                    )}
+                                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-end gap-2">
+                                                        {!img.is_primary ? (
+                                                            <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
+                                                                <span className="material-symbols-outlined text-[20px]">star</span>
+                                                            </button>
+                                                        ) : <div></div>}
+                                                        <button type="button" onClick={() => removeExistingImage(img.id)} className="text-error hover:text-error/80 flex items-center bg-black/40 rounded p-1">
+                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
+                                                    <select
+                                                        value={albumName}
+                                                        onChange={(e) => updateExistingImageAlbum(img.id, e.target.value)}
+                                                        className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
+                                                    >
+                                                        {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Render Local Images */}
+                                        {localImgs.map((img) => (
+                                            <div key={`local-${img.globalIndex}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
+                                                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
+                                                    <img src={img.preview} alt="Preview" className="w-full h-full object-cover opacity-80" />
+                                                    <div className="absolute top-2 left-2 bg-tertiary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">BARU</div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeLocalImage(img.globalIndex)}
+                                                        className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    >
+                                                        <span className="material-symbols-outlined text-[16px]">close</span>
+                                                    </button>
+                                                </div>
+                                                <div className="flex flex-col gap-1">
+                                                    <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
+                                                    <select
+                                                        value={albumName}
+                                                        onChange={(e) => updateLocalImageAlbum(img.globalIndex, e.target.value)}
+                                                        className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
+                                                    >
+                                                        {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))}
+
+                                        {/* Upload Dropzone */}
+                                        <div className="relative border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low hover:border-primary transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[160px]">
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/jpeg,image/png,image/webp,image/jpg"
+                                                onChange={(e) => handleImageSelect(e, albumName)}
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                title={`Upload ke album ${albumName}`}
+                                            />
+                                            <span className="material-symbols-outlined text-3xl text-outline-variant group-hover:text-primary mb-2">add_photo_alternate</span>
+                                            <p className="text-sm font-medium text-on-surface">Tambah Foto</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                        
+                        <InputError message={errors.images} className="mt-2" />
+                        <InputError message={errors.new_images} className="mt-2" />
                     </div>
 
                     {/* Actions */}
                     <div className="flex justify-end gap-4">
-                        <Link 
+                        <Link
                             href={route('admin.villas.index')}
                             className="px-6 py-3 rounded-lg font-button text-sm text-on-surface-variant hover:bg-surface-container-low transition-colors bg-white ghost-border ambient-shadow"
                         >

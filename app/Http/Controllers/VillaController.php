@@ -59,6 +59,8 @@ class VillaController extends Controller
             'weekend_enabled' => 'boolean',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB per image
+            'image_albums' => 'nullable|array',
+            'image_albums.*' => 'nullable|string|max:255',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -73,11 +75,14 @@ class VillaController extends Controller
         // Handle image uploads
         if ($request->hasFile('images')) {
             $isFirst = true;
-            foreach ($request->file('images') as $image) {
+            $albums = $request->input('image_albums', []);
+            foreach ($request->file('images') as $index => $image) {
                 $path = $image->store('villas', 'public');
+                $album = isset($albums[$index]) ? $albums[$index] : 'Lainnya';
                 $villa->images()->create([
                     'image_url' => '/storage/' . $path,
-                    'is_primary' => $isFirst
+                    'is_primary' => $isFirst,
+                    'album' => $album
                 ]);
                 $isFirst = false; // Only first image is primary
             }
@@ -130,6 +135,8 @@ class VillaController extends Controller
             'weekend_enabled' => 'boolean',
             'new_images' => 'nullable|array',
             'new_images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
+            'new_image_albums' => 'nullable|array',
+            'new_image_albums.*' => 'nullable|string|max:255',
         ]);
 
         // Only update slug if name changed
@@ -148,12 +155,15 @@ class VillaController extends Controller
         if ($request->hasFile('new_images')) {
             // Check if villa already has a primary image
             $hasPrimary = $villa->images()->where('is_primary', true)->exists();
+            $albums = $request->input('new_image_albums', []);
 
-            foreach ($request->file('new_images') as $image) {
+            foreach ($request->file('new_images') as $index => $image) {
                 $path = $image->store('villas', 'public');
+                $album = isset($albums[$index]) ? $albums[$index] : 'Lainnya';
                 $villa->images()->create([
                     'image_url' => '/storage/' . $path,
-                    'is_primary' => !$hasPrimary // Set primary if there's no primary image yet
+                    'is_primary' => !$hasPrimary, // Set primary if there's no primary image yet
+                    'album' => $album
                 ]);
                 $hasPrimary = true; // After the first new image is set as primary, subsequent ones won't be
             }

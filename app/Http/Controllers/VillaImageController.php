@@ -46,4 +46,20 @@ class VillaImageController extends Controller
 
         return redirect()->back()->with('success', 'Foto utama berhasil diubah.');
     }
+
+    /**
+     * Update the album category for the specified image.
+     */
+    public function updateAlbum(Request $request, Villa $villa, VillaImage $image)
+    {
+        $request->validate([
+            'album' => 'nullable|string|max:255',
+        ]);
+
+        $image->update([
+            'album' => $request->album ?: 'Lainnya'
+        ]);
+
+        return redirect()->back()->with('success', 'Kategori album berhasil diperbarui.');
+    }
 }
