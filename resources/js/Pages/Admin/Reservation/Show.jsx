@@ -1,5 +1,12 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+import Modal from '@/Components/Modal';
+import SecondaryButton from '@/Components/SecondaryButton';
+import PrimaryButton from '@/Components/PrimaryButton';
+import { Calendar } from '@/components/ui/calendar';
+import { differenceInDays, format, parseISO } from 'date-fns';
+import { id } from 'date-fns/locale';
 
 const BOOKING_STATUS = {
     pending:    { label: 'Menunggu',     color: 'bg-amber-100 text-amber-700',    icon: 'hourglass_empty' },
@@ -34,13 +41,49 @@ function InfoRow({ label, value }) {
     );
 }
 
-export default function ReservationShow({ booking }) {
+export default function ReservationShow({ booking, bookedDates = [] }) {
     const { flash } = usePage().props;
 
     const statusForm = useForm({
         booking_status: booking.booking_status,
         payment_status: booking.payment_status,
     });
+
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [dateRange, setDateRange] = useState({
+        from: booking.check_in ? parseISO(booking.check_in) : undefined,
+        to: booking.check_out ? parseISO(booking.check_out) : undefined,
+    });
+    
+    const dateForm = useForm({
+        check_in: booking.check_in,
+        check_out: booking.check_out,
+    });
+
+    useEffect(() => {
+        if (dateRange?.from) dateForm.setData('check_in', format(dateRange.from, 'yyyy-MM-dd'));
+        if (dateRange?.to) dateForm.setData('check_out', format(dateRange.to, 'yyyy-MM-dd'));
+    }, [dateRange]);
+
+    const openEditModal = () => {
+        setDateRange({
+            from: booking.check_in ? parseISO(booking.check_in) : undefined,
+            to: booking.check_out ? parseISO(booking.check_out) : undefined,
+        });
+        dateForm.clearErrors();
+        setIsEditModalOpen(true);
+    };
+
+    const handleDateSubmit = (e) => {
+        e.preventDefault();
+        dateForm.patch(route('admin.reservations.update-dates', booking.id), {
+            onSuccess: () => setIsEditModalOpen(false),
+        });
+    };
+    
+    const originalNights = differenceInDays(parseISO(booking.check_out), parseISO(booking.check_in));
+    const selectedNights = dateRange?.from && dateRange?.to ? differenceInDays(dateRange.to, dateRange.from) : 0;
+    const isDurationValid = selectedNights === originalNights;
 
     const updateStatus = (e) => {
         e.preventDefault();
@@ -121,26 +164,51 @@ export default function ReservationShow({ booking }) {
                         </div>
 
                         {/* Villa Info */}
-                        <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
-                            <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">villa</span>
-                                Informasi Villa
-                            </h3>
-                            <div className="flex gap-4">
+                        <div className="bg-white rounded-xl p-6 ghost-border ambient-shadow relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-gold/5 rounded-bl-full -z-10"></div>
+                            
+                            <div className="flex items-center justify-between mb-5">
+                                <h3 className="font-bold text-primary text-sm uppercase tracking-wider flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-[18px]">villa</span>
+                                    Informasi Villa
+                                </h3>
+                                <button
+                                    onClick={openEditModal}
+                                    className="p-2 rounded-full hover:bg-gold/10 text-gold transition-colors"
+                                    title="Ubah Tanggal Reservasi"
+                                >
+                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row gap-6 items-start">
                                 {imageUrl && (
                                     <img
                                         src={imageUrl}
                                         alt={booking.villa?.name}
-                                        className="w-24 h-20 object-cover rounded-xl shrink-0"
+                                        className="w-full md:w-48 h-32 object-cover rounded-xl shrink-0 shadow-sm"
                                     />
                                 )}
-                                <div>
-                                    <p className="font-bold text-on-surface text-base">{booking.villa?.name ?? '-'}</p>
-                                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
-                                        <div className="text-xs text-on-surface-variant">Check-In <span className="block font-semibold text-on-surface text-sm">{formatDate(booking.check_in)}</span></div>
-                                        <div className="text-xs text-on-surface-variant">Check-Out <span className="block font-semibold text-on-surface text-sm">{formatDate(booking.check_out)}</span></div>
-                                        <div className="text-xs text-on-surface-variant">Durasi <span className="block font-semibold text-on-surface text-sm">{nights} malam</span></div>
-                                        <div className="text-xs text-on-surface-variant">Tamu <span className="block font-semibold text-on-surface text-sm">{booking.guest_count} orang</span></div>
+                                <div className="flex-1 w-full">
+                                    <p className="font-bold text-on-surface text-lg mb-4">{booking.villa?.name ?? '-'}</p>
+                                    
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <div className="bg-surface-variant/30 p-3 rounded-lg border border-outline-variant/30">
+                                            <span className="text-xs text-on-surface-variant uppercase font-medium block mb-1">Check-In</span>
+                                            <span className="font-semibold text-on-surface">{formatDate(booking.check_in)}</span>
+                                        </div>
+                                        <div className="bg-surface-variant/30 p-3 rounded-lg border border-outline-variant/30">
+                                            <span className="text-xs text-on-surface-variant uppercase font-medium block mb-1">Check-Out</span>
+                                            <span className="font-semibold text-on-surface">{formatDate(booking.check_out)}</span>
+                                        </div>
+                                        <div className="bg-surface-variant/30 p-3 rounded-lg border border-outline-variant/30">
+                                            <span className="text-xs text-on-surface-variant uppercase font-medium block mb-1">Durasi</span>
+                                            <span className="font-semibold text-on-surface">{nights} malam</span>
+                                        </div>
+                                        <div className="bg-surface-variant/30 p-3 rounded-lg border border-outline-variant/30">
+                                            <span className="text-xs text-on-surface-variant uppercase font-medium block mb-1">Tamu</span>
+                                            <span className="font-semibold text-on-surface">{booking.guest_count} orang</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -278,7 +346,46 @@ export default function ReservationShow({ booking }) {
                     </div>
                 </div>
 
-            </div>
-        </AdminLayout>
+            </div >
+
+            <Modal show={isEditModalOpen} onClose={() => setIsEditModalOpen(false)}>
+                <div className="p-6">
+                    <h2 className="text-lg font-medium text-gray-900 mb-4">Ubah Tanggal Reservasi</h2>
+                    
+                    <form onSubmit={handleDateSubmit}>
+                        <div className="flex flex-col items-center justify-center mb-4 bg-gray-50 rounded-xl p-4 border border-gray-100 overflow-x-auto">
+                            <Calendar
+                                mode="range"
+                                selected={dateRange}
+                                onSelect={setDateRange}
+                                numberOfMonths={1}
+                                locale={id}
+                                disabled={[
+                                    { before: new Date() },
+                                    ...bookedDates.map(dateStr => parseISO(dateStr))
+                                ]}
+                                className="bg-white rounded-md p-3"
+                            />
+                        </div>
+
+                        {!isDurationValid && dateRange?.from && dateRange?.to && (
+                            <p className="text-sm text-red-600 mb-4 text-center bg-red-50 p-2 rounded-lg">
+                                Durasi yang dipilih ({selectedNights} malam) tidak sama dengan pesanan awal ({originalNights} malam).
+                            </p>
+                        )}
+                        
+                        {dateForm.errors.check_in && <p className="text-sm text-red-600 mb-2">{dateForm.errors.check_in}</p>}
+                        {dateForm.errors.check_out && <p className="text-sm text-red-600 mb-4">{dateForm.errors.check_out}</p>}
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <SecondaryButton onClick={() => setIsEditModalOpen(false)}>Batal</SecondaryButton>
+                            <PrimaryButton className="bg-gold hover:bg-gold/90 text-white" disabled={!isDurationValid || dateForm.processing}>
+                                Simpan Perubahan
+                            </PrimaryButton>
+                        </div>
+                    </form>
+                </div>
+            </Modal>
+        </AdminLayout >
     );
 }

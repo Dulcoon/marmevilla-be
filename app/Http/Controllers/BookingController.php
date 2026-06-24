@@ -6,6 +6,8 @@ use App\Models\Booking;
 use App\Models\Villa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 
 class BookingController extends Controller
 {
@@ -72,8 +74,23 @@ class BookingController extends Controller
     {
         $booking->load(['villa.images', 'voucher']);
 
+        // Get booked dates for the villa, EXCLUDING the current booking
+        $otherBookings = Booking::where('villa_id', $booking->villa_id)
+            ->where('id', '!=', $booking->id)
+            ->whereIn('booking_status', ['confirmed', 'checked_in'])
+            ->get();
+
+        $bookedDates = [];
+        foreach ($otherBookings as $b) {
+            $period = CarbonPeriod::create($b->check_in, Carbon::parse($b->check_out)->subDay());
+            foreach ($period as $date) {
+                $bookedDates[] = $date->format('Y-m-d');
+            }
+        }
+
         return Inertia::render('Admin/Reservation/Show', [
             'booking' => $booking,
+            'bookedDates' => $bookedDates,
         ]);
     }
 
@@ -109,5 +126,49 @@ class BookingController extends Controller
         $booking->update(['booking_status' => 'cancelled']);
 
         return back()->with('success', 'Reservasi berhasil dibatalkan.');
+    }
+
+    /**
+     * Update booking dates.
+     */
+    public function updateDates(Request $request, Booking $booking)
+    {
+        $request->validate([
+            'check_in' => 'required|date',
+            'check_out' => 'required|date|after:check_in',
+        ]);
+
+        $newCheckIn = Carbon::parse($request->check_in)->startOfDay();
+        $newCheckOut = Carbon::parse($request->check_out)->startOfDay();
+        
+        $originalCheckIn = Carbon::parse($booking->check_in)->startOfDay();
+        $originalCheckOut = Carbon::parse($booking->check_out)->startOfDay();
+
+        $originalNights = $originalCheckIn->diffInDays($originalCheckOut);
+        $newNights = $newCheckIn->diffInDays($newCheckOut);
+
+        if ($originalNights !== $newNights) {
+            return back()->with('error', 'Jumlah malam (' . $newNights . ') tidak sesuai dengan pesanan asli (' . $originalNights . ').');
+        }
+
+        // Check if dates are available (excluding this booking)
+        $hasBooking = Booking::where('villa_id', $booking->villa_id)
+            ->where('id', '!=', $booking->id)
+            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->where(function ($query) use ($newCheckIn, $newCheckOut) {
+                $query->where('check_in', '<', $newCheckOut->format('Y-m-d'))
+                      ->where('check_out', '>', $newCheckIn->format('Y-m-d'));
+            })->exists();
+
+        if ($hasBooking) {
+            return back()->with('error', 'Tanggal yang dipilih sudah dipesan oleh orang lain.');
+        }
+
+        $booking->update([
+            'check_in' => $newCheckIn->format('Y-m-d'),
+            'check_out' => $newCheckOut->format('Y-m-d'),
+        ]);
+
+        return back()->with('success', 'Tanggal reservasi berhasil diperbarui.');
     }
 }
