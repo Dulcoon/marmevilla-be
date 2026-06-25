@@ -69,7 +69,7 @@ class VillaController extends Controller
         if (empty($validated['long_description'])) $validated['long_description'] = null;
         if (empty($validated['features'])) $validated['features'] = null;
 
-        $villaData = \Illuminate\Support\Arr::except($validated, ['images', 'facilities_ids']);
+        $villaData = \Illuminate\Support\Arr::except($validated, ['images', 'image_albums', 'facilities_ids']);
         $villa = Villa::create($villaData);
  
         // Handle image uploads
@@ -148,7 +148,7 @@ class VillaController extends Controller
         if (empty($validated['long_description'])) $validated['long_description'] = null;
         if (empty($validated['features'])) $validated['features'] = null;
 
-        $villaData = \Illuminate\Support\Arr::except($validated, ['new_images', 'facilities_ids']);
+         $villaData = \Illuminate\Support\Arr::except($validated, ['new_images', 'new_image_albums', 'facilities_ids']);
         $villa->update($villaData);
 
         // Handle new image uploads
