@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
         Route::delete('villas/{villa}/images/{image}', [\App\Http\Controllers\VillaImageController::class, 'destroy'])->name('villas.images.destroy');
         Route::patch('villas/{villa}/images/{image}/set-primary', [\App\Http\Controllers\VillaImageController::class, 'setPrimary'])->name('villas.images.set-primary');
         Route::patch('villas/{villa}/images/{image}/album', [\App\Http\Controllers\VillaImageController::class, 'updateAlbum'])->name('villas.images.update-album');
+        
+        // Villa Facilities
+        Route::post('facilities', [\App\Http\Controllers\VillaFacilityController::class, 'store'])->name('facilities.store');
     
         // Pricing Rules Routes
         Route::get('pricing', [\App\Http\Controllers\PricingRuleController::class, 'index'])->name('pricing.index');

@@ -325,7 +325,21 @@ export default function Form({ villa, all_facilities }) {
 
                         {all_facilities && all_facilities.length > 0 && (
                             <div className="flex flex-col gap-2 mt-4">
-                                <InputLabel value="Fasilitas Kamar" />
+                                <div className="flex justify-between items-center">
+                                    <InputLabel value="Fasilitas Kamar" />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => {
+                                            const name = prompt("Masukkan Nama Fasilitas Baru:");
+                                            if (name && name.trim()) {
+                                                router.post(route('admin.facilities.store'), { name: name.trim() }, { preserveScroll: true });
+                                            }
+                                        }}
+                                        className="text-xs bg-primary/10 text-primary font-semibold px-3 py-1 rounded hover:bg-primary/20 transition-colors flex items-center gap-1"
+                                    >
+                                        <span className="material-symbols-outlined text-[16px]">add</span> Tambah
+                                    </button>
+                                </div>
                                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
                                     {all_facilities.map(facility => (
                                         <label key={facility.id} className="flex items-center gap-3 cursor-pointer select-none p-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
