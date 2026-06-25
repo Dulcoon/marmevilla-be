@@ -454,7 +454,7 @@ export default function Form({ villa, all_facilities }) {
                                                     {img.is_primary && (
                                                         <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">UTAMA</div>
                                                     )}
-                                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity flex justify-between items-end gap-2">
+                                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-end gap-2">
                                                         {!img.is_primary ? (
                                                             <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
                                                                 <span className="material-symbols-outlined text-[20px]">star</span>
@@ -487,7 +487,7 @@ export default function Form({ villa, all_facilities }) {
                                                     <button
                                                         type="button"
                                                         onClick={() => removeLocalImage(img.globalIndex)}
-                                                        className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center"
                                                     >
                                                         <span className="material-symbols-outlined text-[16px]">close</span>
                                                     </button>
