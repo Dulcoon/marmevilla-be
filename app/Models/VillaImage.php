@@ -10,4 +10,11 @@ class VillaImage extends Model
     use HasUuids;
 
     protected $guarded = [];
+
+    protected function casts(): array
+    {
+        return [
+            'is_primary' => 'boolean',
+        ];
+    }
 }
