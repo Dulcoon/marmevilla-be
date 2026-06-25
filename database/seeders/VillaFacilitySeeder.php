@@ -61,7 +61,6 @@ class VillaFacilitySeeder extends Seeder
 
                 if (!$exists) {
                     DB::table('villa_facility_items')->insert([
-                        'id' => Str::uuid()->toString(),
                         'villa_id' => $villa->id,
                         'facility_id' => $facility->id,
                     ]);
