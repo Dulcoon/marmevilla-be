@@ -1,30 +1,47 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
 
-export default function Dashboard() {
+export default function Dashboard({ stats: beStats, recentBookings }) {
     const stats = [
         {
             title: 'Total Pendapatan',
-            value: 'Rp 45.200.000',
+            value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(beStats?.totalRevenue || 0),
             icon: 'payments',
-            trend: '+12.5%',
-            trendType: 'up',
+            trend: 'Pesanan Lunas',
+            trendType: 'neutral',
         },
         {
             title: 'Total Booking',
-            value: '128',
+            value: beStats?.totalBookings || '0',
             icon: 'calendar_month',
-            trend: '+5.2%',
-            trendType: 'up',
+            trend: 'Semua Status',
+            trendType: 'neutral',
         },
         {
             title: 'Reservasi Aktif',
-            value: '14',
+            value: beStats?.activeBookings || '0',
             icon: 'vpn_key',
-            trend: 'Hari Ini',
+            trend: 'Belum Check-out',
             trendType: 'neutral',
         },
     ];
+
+    const formatDateRange = (start, end) => {
+        if (!start || !end) return '-';
+        const opt = { day: 'numeric', month: 'short' };
+        return `${new Date(start).toLocaleDateString('id-ID', opt)} - ${new Date(end).toLocaleDateString('id-ID', opt)}`;
+    };
+
+    const getStatusStyle = (status) => {
+        switch (status) {
+            case 'pending': return { label: 'Menunggu', style: 'bg-[#fff3e0] text-[#e65100]' };
+            case 'confirmed': return { label: 'Dikonfirmasi', style: 'bg-[#e8f5e9] text-[#2e7d32]' };
+            case 'checked_in': return { label: 'Check-in', style: 'bg-[#e3f2fd] text-[#1565c0]' };
+            case 'checked_out': return { label: 'Selesai', style: 'bg-surface-variant text-on-surface-variant' };
+            case 'cancelled': return { label: 'Batal', style: 'bg-[#ffebee] text-[#c62828]' };
+            default: return { label: status || 'Unknown', style: 'bg-surface-variant text-on-surface-variant' };
+        }
+    };
 
     const highlights = [
         {
@@ -50,40 +67,7 @@ export default function Dashboard() {
         },
     ];
 
-    const bookings = [
-        {
-            code: '#MV-8492',
-            guest: 'Budi Santoso',
-            villa: 'Villa Mahadewi',
-            dates: '12 Okt - 15 Okt',
-            status: 'Dikonfirmasi',
-            statusStyle: 'bg-[#e8f5e9] text-[#2e7d32]',
-        },
-        {
-            code: '#MV-8493',
-            guest: 'Sarah Jenkins',
-            villa: 'Villa Kencana',
-            dates: '14 Okt - 18 Okt',
-            status: 'Menunggu',
-            statusStyle: 'bg-[#fff3e0] text-[#e65100]',
-        },
-        {
-            code: '#MV-8494',
-            guest: 'Ahmad Reza',
-            villa: 'Villa Arjuna',
-            dates: '12 Okt - 14 Okt',
-            status: 'Sudah Check-in',
-            statusStyle: 'bg-[#e3f2fd] text-[#1565c0]',
-        },
-        {
-            code: '#MV-8495',
-            guest: 'Diana Wijaya',
-            villa: 'Villa Mahadewi',
-            dates: '20 Okt - 22 Okt',
-            status: 'Dikonfirmasi',
-            statusStyle: 'bg-[#e8f5e9] text-[#2e7d32]',
-        },
-    ];
+    const bookings = recentBookings || [];
 
     return (
         <AdminLayout>
@@ -199,66 +183,78 @@ export default function Dashboard() {
                                 </tr>
                             </thead>
                             <tbody className="text-sm text-on-surface">
-                                {bookings.map((booking, idx) => (
-                                    <tr 
-                                        key={idx} 
-                                        className={`hover:bg-surface-container-lowest transition-colors ${
-                                            idx !== bookings.length - 1 ? 'border-b border-outline-variant/50' : ''
-                                        }`}
-                                    >
-                                        <td className="py-4 px-4 sm:px-6 font-mono text-primary font-semibold">{booking.code}</td>
-                                        <td className="py-4 px-4 sm:px-6 font-bold">{booking.guest}</td>
-                                        <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{booking.villa}</td>
-                                        <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{booking.dates}</td>
-                                        <td className="py-4 px-4 sm:px-6">
-                                            <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-bold ${booking.statusStyle}`}>
-                                                {booking.status}
-                                            </span>
-                                        </td>
-                                        <td className="py-4 px-4 sm:px-6 text-right">
-                                            <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
-                                                <span className="material-symbols-outlined text-base sm:text-sm">more_vert</span>
-                                            </button>
-                                        </td>
+                                {bookings.length > 0 ? bookings.map((booking, idx) => {
+                                    const { label, style } = getStatusStyle(booking.booking_status);
+                                    return (
+                                        <tr 
+                                            key={booking.id || idx} 
+                                            className={`hover:bg-surface-container-lowest transition-colors ${
+                                                idx !== bookings.length - 1 ? 'border-b border-outline-variant/50' : ''
+                                            }`}
+                                        >
+                                            <td className="py-4 px-4 sm:px-6 font-mono text-primary font-semibold">{booking.booking_code}</td>
+                                            <td className="py-4 px-4 sm:px-6 font-bold">{booking.guest_name}</td>
+                                            <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{booking.villa?.name || '-'}</td>
+                                            <td className="py-4 px-4 sm:px-6 text-on-surface-variant">{formatDateRange(booking.check_in, booking.check_out)}</td>
+                                            <td className="py-4 px-4 sm:px-6">
+                                                <span className={`inline-block px-3 py-1.5 rounded-full text-[11px] font-bold ${style}`}>
+                                                    {label}
+                                                </span>
+                                            </td>
+                                            <td className="py-4 px-4 sm:px-6 text-right">
+                                                <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
+                                                    <span className="material-symbols-outlined text-base sm:text-sm">more_vert</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    )
+                                }) : (
+                                    <tr>
+                                        <td colSpan="6" className="py-8 text-center text-on-surface-variant">Belum ada booking terbaru</td>
                                     </tr>
-                                ))}
+                                )}
                             </tbody>
                         </table>
                     </div>
 
                     {/* Mobile List View */}
                     <div className="md:hidden flex flex-col divide-y divide-outline-variant/50">
-                        {bookings.map((booking, idx) => (
-                            <div key={idx} className="p-5 flex flex-col gap-4 bg-white hover:bg-surface-container-lowest transition-colors">
-                                {/* Top Row: ID & Status */}
-                                <div className="flex justify-between items-center">
-                                    <span className="font-mono text-on-surface-variant text-[11px] font-bold">{booking.code}</span>
-                                    <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${booking.statusStyle}`}>
-                                        {booking.status}
-                                    </span>
-                                </div>
-                                
-                                {/* Guest Name */}
-                                <p className="font-bold text-[17px] text-primary -mt-2">{booking.guest}</p>
-                                
-                                {/* Detail Box */}
-                                <div className="flex justify-between items-center text-sm text-on-surface-variant bg-[#F9F7F2] rounded-xl p-3.5">
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[18px]">villa</span>
-                                        <span className="font-medium">{booking.villa}</span>
+                        {bookings.length > 0 ? bookings.map((booking, idx) => {
+                            const { label, style } = getStatusStyle(booking.booking_status);
+                            return (
+                                <div key={booking.id || idx} className="p-5 flex flex-col gap-4 bg-white hover:bg-surface-container-lowest transition-colors">
+                                    {/* Top Row: ID & Status */}
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-mono text-on-surface-variant text-[11px] font-bold">{booking.booking_code}</span>
+                                        <span className={`px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap ${style}`}>
+                                            {label}
+                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-[18px]">calendar_today</span>
-                                        <span className="font-medium">{booking.dates}</span>
+                                    
+                                    {/* Guest Name */}
+                                    <p className="font-bold text-[17px] text-primary -mt-2">{booking.guest_name}</p>
+                                    
+                                    {/* Detail Box */}
+                                    <div className="flex justify-between items-center text-sm text-on-surface-variant bg-[#F9F7F2] rounded-xl p-3.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[18px]">villa</span>
+                                            <span className="font-medium truncate max-w-[120px]">{booking.villa?.name || '-'}</span>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            <span className="font-medium whitespace-nowrap">{formatDateRange(booking.check_in, booking.check_out)}</span>
+                                        </div>
                                     </div>
+                                    
+                                    {/* Action Button */}
+                                    <button className="w-full py-2.5 text-sm font-semibold text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+                                        Lihat Detail
+                                    </button>
                                 </div>
-                                
-                                {/* Action Button */}
-                                <button className="w-full py-2.5 text-sm font-semibold text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
-                                    Lihat Detail
-                                </button>
-                            </div>
-                        ))}
+                            )
+                        }) : (
+                            <div className="p-8 text-center text-on-surface-variant text-sm">Belum ada booking terbaru</div>
+                        )}
                     </div>
                 </div>
             </div>
