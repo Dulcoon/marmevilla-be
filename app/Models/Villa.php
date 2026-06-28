@@ -13,7 +13,9 @@ class Villa extends Model
 
     protected $casts = [
         'long_description' => 'array',
+        'long_description_en' => 'array',
         'features' => 'array',
+        'features_en' => 'array',
         'weekend_enabled' => 'boolean',
     ];
 

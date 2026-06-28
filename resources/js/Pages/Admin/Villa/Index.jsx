@@ -216,8 +216,8 @@ export default function Index({ villas }) {
                                         </div>
                                     )}
                                     
-                                    {/* Status Pill */}
-                                    <div className="absolute top-3 right-3">
+                                    {/* Status Pills */}
+                                    <div className="absolute top-3 right-3 flex flex-col items-end gap-2">
                                         {villa.weekend_enabled ? (
                                             <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#e8f5e9]/90 backdrop-blur-sm text-[#2e7d32] flex items-center gap-1.5 shadow-sm">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-[#2e7d32]"></span> Weekend Aktif
@@ -225,6 +225,15 @@ export default function Index({ villas }) {
                                         ) : (
                                             <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-white/90 backdrop-blur-sm text-on-surface-variant flex items-center gap-1.5 shadow-sm">
                                                 <span className="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span> Weekend Mati
+                                            </span>
+                                        )}
+                                        {villa.description_en ? (
+                                            <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-blue-50/90 backdrop-blur-sm text-blue-600 flex items-center gap-1.5 shadow-sm border border-blue-100">
+                                                🇬🇧 EN Tersedia
+                                            </span>
+                                        ) : (
+                                            <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50/90 backdrop-blur-sm text-amber-600 flex items-center gap-1.5 shadow-sm border border-amber-100">
+                                                <span className="material-symbols-outlined text-[14px]">pending</span> Menunggu EN
                                             </span>
                                         )}
                                     </div>

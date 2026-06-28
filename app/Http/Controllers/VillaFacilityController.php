@@ -13,10 +13,12 @@ class VillaFacilityController extends Controller
             'name' => 'required|string|max:255',
         ]);
 
-        VillaFacility::create([
+        $facility = VillaFacility::create([
             'name' => $request->name,
             'icon' => 'check_circle', // default icon
         ]);
+
+        \App\Jobs\TranslateFacilityDataJob::dispatch($facility);
 
         return redirect()->back()->with('success', 'Fasilitas baru berhasil ditambahkan.');
     }

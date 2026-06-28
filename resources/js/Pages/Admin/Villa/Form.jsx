@@ -554,7 +554,7 @@ export default function Form({ villa, all_facilities }) {
                             className="bg-primary text-white px-8 py-3 rounded-lg font-button text-sm hover:bg-primary/90 transition-colors ambient-shadow active:scale-[0.98] disabled:opacity-50"
                             disabled={processing}
                         >
-                            {processing ? 'Menyimpan...' : 'Simpan Villa'}
+                            {processing ? 'Menyimpan & Menerjemahkan (tunggu sebentar)...' : 'Simpan Villa'}
                         </button>
                     </div>
 

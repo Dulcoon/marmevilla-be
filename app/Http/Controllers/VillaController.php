@@ -71,6 +71,7 @@ class VillaController extends Controller
 
         $villaData = \Illuminate\Support\Arr::except($validated, ['images', 'image_albums', 'facilities_ids']);
         $villa = Villa::create($villaData);
+        \App\Jobs\TranslateVillaDataJob::dispatch($villa);
  
         // Handle image uploads
         if ($request->hasFile('images')) {
@@ -150,6 +151,7 @@ class VillaController extends Controller
 
          $villaData = \Illuminate\Support\Arr::except($validated, ['new_images', 'new_image_albums', 'facilities_ids']);
         $villa->update($villaData);
+        \App\Jobs\TranslateVillaDataJob::dispatch($villa);
 
         // Handle new image uploads
         if ($request->hasFile('new_images')) {
