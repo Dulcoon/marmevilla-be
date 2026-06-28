@@ -4,6 +4,7 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { MATERIAL_ICONS } from '@/utils/material-icons';
 
 export default function Form({ villa, all_facilities }) {
     const isEditing = !!villa.id;
@@ -38,6 +39,47 @@ export default function Form({ villa, all_facilities }) {
 
     const [localImages, setLocalImages] = useState([]);
     const [customAlbums, setCustomAlbums] = useState([]);
+
+    // Modal State for New Facility
+    const [showFacilityModal, setShowFacilityModal] = useState(false);
+    const [newFacilityName, setNewFacilityName] = useState('');
+    const [newFacilityIcon, setNewFacilityIcon] = useState('');
+    const [searchIconQuery, setSearchIconQuery] = useState('');
+    const [facilityError, setFacilityError] = useState('');
+
+    const filteredIcons = useMemo(() => {
+        if (!searchIconQuery.trim()) {
+            const popularIcons = [
+                'wifi', 'pool', 'ac_unit', 'kitchen', 'restaurant', 
+                'tv', 'hot_tub', 'local_parking', 'sports_tennis', 'spa',
+                'water_drop', 'coffee_maker', 'local_drink', 'lock', 'checkroom', 'flight', 'fitness_center'
+            ];
+            // Gunakan Set untuk mencegah duplikasi key pada React (misal 'wifi' ada di popular dan MATERIAL_ICONS)
+            return [...new Set([...popularIcons, ...MATERIAL_ICONS.slice(0, 40)])].slice(0, 50);
+        }
+        const query = searchIconQuery.toLowerCase().replace(/[^a-z_]/g, '');
+        return MATERIAL_ICONS.filter(icon => icon.includes(query)).slice(0, 100);
+    }, [searchIconQuery]);
+
+    const submitNewFacility = () => {
+        if (!newFacilityName.trim()) return;
+        setFacilityError('');
+        router.post(route('admin.facilities.store'), { 
+            name: newFacilityName.trim(), 
+            icon: newFacilityIcon.trim() || null 
+        }, { 
+            preserveScroll: true,
+            onSuccess: () => {
+                setShowFacilityModal(false);
+                setNewFacilityName('');
+                setNewFacilityIcon('');
+                setSearchIconQuery('');
+            },
+            onError: (errors) => {
+                setFacilityError(errors.name || 'Terjadi kesalahan saat menyimpan.');
+            }
+        });
+    };
 
     const allAlbums = useMemo(() => {
         const defaults = ["Lainnya"];
@@ -329,12 +371,7 @@ export default function Form({ villa, all_facilities }) {
                                     <InputLabel value="Fasilitas Kamar" />
                                     <button 
                                         type="button" 
-                                        onClick={() => {
-                                            const name = prompt("Masukkan Nama Fasilitas Baru:");
-                                            if (name && name.trim()) {
-                                                router.post(route('admin.facilities.store'), { name: name.trim() }, { preserveScroll: true });
-                                            }
-                                        }}
+                                        onClick={() => setShowFacilityModal(true)}
                                         className="text-xs bg-primary/10 text-primary font-semibold px-3 py-1 rounded hover:bg-primary/20 transition-colors flex items-center gap-1"
                                     >
                                         <span className="material-symbols-outlined text-[16px]">add</span> Tambah
@@ -354,9 +391,10 @@ export default function Form({ villa, all_facilities }) {
                                                         setData('facilities_ids', data.facilities_ids.filter(id => id !== facility.id));
                                                     }
                                                 }}
-                                                className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4"
+                                                className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4 shrink-0"
                                             />
-                                            <span className="text-sm text-on-surface">{facility.name}</span>
+                                            <span className="material-symbols-outlined text-[20px] text-primary shrink-0">{facility.icon || 'check_circle'}</span>
+                                            <span className="text-sm text-on-surface line-clamp-1">{facility.name}</span>
                                         </label>
                                     ))}
                                 </div>
@@ -560,6 +598,92 @@ export default function Form({ villa, all_facilities }) {
 
                 </form>
             </div>
+
+            {/* Modal Tambah Fasilitas */}
+            {showFacilityModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+                    <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="flex justify-between items-center mb-4 border-b border-outline-variant/50 pb-2">
+                            <h3 className="text-lg font-bold text-primary">Tambah Fasilitas Baru</h3>
+                            <button onClick={() => {
+                                setShowFacilityModal(false);
+                                setFacilityError('');
+                            }} className="text-outline hover:text-error transition-colors p-1">
+                                <span className="material-symbols-outlined text-[20px]">close</span>
+                            </button>
+                        </div>
+                        
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <InputLabel value="Nama Fasilitas *" />
+                                <input 
+                                    type="text" 
+                                    value={newFacilityName} 
+                                    onChange={e => {
+                                        setNewFacilityName(e.target.value);
+                                        if (facilityError) setFacilityError('');
+                                    }} 
+                                    className={inputClasses} 
+                                    placeholder="Cth: Kolam Renang, Smart TV" 
+                                    autoFocus 
+                                />
+                                {facilityError && (
+                                    <p className="text-sm text-error mt-1">{facilityError}</p>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-end mb-1">
+                                    <InputLabel value="Cari & Pilih Icon" />
+                                    {newFacilityIcon && (
+                                        <div className="text-xs text-primary font-medium flex items-center gap-1">
+                                            Terpilih: <span className="material-symbols-outlined text-[16px]">{newFacilityIcon}</span> {newFacilityIcon}
+                                        </div>
+                                    )}
+                                </div>
+                                <input 
+                                    type="text" 
+                                    value={searchIconQuery} 
+                                    onChange={e => setSearchIconQuery(e.target.value)} 
+                                    className={`${inputClasses} mb-2`} 
+                                    placeholder="Ketik untuk mencari icon... (cth: bed, car, fire)" 
+                                />
+                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-surface-container-lowest border border-outline-variant rounded-lg max-h-48 overflow-y-auto">
+                                    {filteredIcons.length > 0 ? filteredIcons.map(icon => (
+                                        <button
+                                            key={icon}
+                                            type="button"
+                                            onClick={() => setNewFacilityIcon(icon)}
+                                            className={`p-2 rounded flex flex-col items-center justify-center transition-all ${newFacilityIcon === icon ? 'bg-primary text-white scale-110 shadow-sm' : 'bg-surface-variant/20 text-on-surface-variant hover:bg-surface-variant/50 hover:text-primary'}`}
+                                            title={icon}
+                                        >
+                                            <span className="material-symbols-outlined text-[24px]">{icon}</span>
+                                        </button>
+                                    )) : (
+                                        <div className="col-span-full text-center text-sm text-outline py-4">Icon tidak ditemukan.</div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div>
+                                <InputLabel value="Atau ketik nama icon manual (opsional)" />
+                                <input 
+                                    type="text" 
+                                    value={newFacilityIcon} 
+                                    onChange={e => setNewFacilityIcon(e.target.value.toLowerCase().replace(/[^a-z_]/g, ''))} 
+                                    className={inputClasses} 
+                                    placeholder="Cth: local_cafe" 
+                                />
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-outline-variant/50">
+                                <button type="button" onClick={() => setShowFacilityModal(false)} className="px-4 py-2 text-sm text-on-surface-variant font-semibold hover:bg-surface-container-low rounded-lg transition-colors">Batal</button>
+                                <button type="button" onClick={submitNewFacility} disabled={!newFacilityName.trim()} className="px-4 py-2 text-sm text-white bg-primary font-semibold rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50">Simpan Fasilitas</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

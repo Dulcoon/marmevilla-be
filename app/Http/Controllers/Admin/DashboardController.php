@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Villa;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -33,6 +34,18 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $today = Carbon::today();
+
+        // Check-ins today
+        $todayCheckIns = Booking::whereDate('check_in', $today)->get();
+        $totalCheckInsToday = $todayCheckIns->count();
+        $waitingCheckIns = $todayCheckIns->whereIn('booking_status', ['pending', 'confirmed'])->count();
+
+        // Check-outs today
+        $todayCheckOuts = Booking::whereDate('check_out', $today)->get();
+        $totalCheckOutsToday = $todayCheckOuts->count();
+        $waitingCheckOuts = $todayCheckOuts->whereIn('booking_status', ['checked_in', 'confirmed'])->count();
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'totalRevenue' => (int) $totalRevenue,
@@ -40,6 +53,16 @@ class DashboardController extends Controller
                 'activeBookings' => $activeBookings,
                 'completedBookings' => $completedBookings,
                 'totalVillas' => $totalVillas,
+            ],
+            'todayHighlights' => [
+                'checkIns' => [
+                    'total' => $totalCheckInsToday,
+                    'waiting' => $waitingCheckIns
+                ],
+                'checkOuts' => [
+                    'total' => $totalCheckOutsToday,
+                    'waiting' => $waitingCheckOuts
+                ]
             ],
             'recentBookings' => $recentBookings,
         ]);

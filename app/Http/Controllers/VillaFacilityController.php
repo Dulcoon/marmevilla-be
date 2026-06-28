@@ -11,11 +11,12 @@ class VillaFacilityController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
+            'icon' => 'nullable|string|max:255',
         ]);
 
         $facility = VillaFacility::create([
             'name' => $request->name,
-            'icon' => 'check_circle', // default icon
+            'icon' => $request->icon ?: 'check_circle', // default icon
         ]);
 
         \App\Jobs\TranslateFacilityDataJob::dispatch($facility);

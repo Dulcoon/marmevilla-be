@@ -1,7 +1,7 @@
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head } from '@inertiajs/react';
 
-export default function Dashboard({ stats: beStats, recentBookings }) {
+export default function Dashboard({ stats: beStats, todayHighlights, recentBookings }) {
     const stats = [
         {
             title: 'Total Pendapatan',
@@ -46,25 +46,18 @@ export default function Dashboard({ stats: beStats, recentBookings }) {
     const highlights = [
         {
             title: 'Check-in',
-            subtitle: '4 Tamu Datang',
-            status: '2 Menunggu',
+            subtitle: `${todayHighlights?.checkIns?.total || 0} Tamu Datang`,
+            status: todayHighlights?.checkIns?.waiting > 0 ? `${todayHighlights.checkIns.waiting} Menunggu` : 'Semua Sudah Datang',
             icon: 'login',
-            statusStyle: 'bg-primary/20 text-primary',
+            statusStyle: todayHighlights?.checkIns?.waiting > 0 ? 'bg-primary/20 text-primary' : 'bg-surface-variant text-on-surface-variant',
         },
         {
             title: 'Check-out',
-            subtitle: '3 Terjadwal',
-            status: 'Selesai Semua',
+            subtitle: `${todayHighlights?.checkOuts?.total || 0} Terjadwal`,
+            status: todayHighlights?.checkOuts?.waiting > 0 ? `${todayHighlights.checkOuts.waiting} Belum Keluar` : 'Selesai Semua',
             icon: 'logout',
-            statusStyle: 'bg-primary/20 text-primary',
-        },
-        {
-            title: 'Kebersihan',
-            subtitle: '5 Villa',
-            status: '1 Mendesak',
-            icon: 'cleaning_services',
-            statusStyle: 'bg-error/20 text-error-container',
-        },
+            statusStyle: todayHighlights?.checkOuts?.waiting > 0 ? 'bg-error/20 text-error-container' : 'bg-surface-variant text-on-surface-variant',
+        }
     ];
 
     const bookings = recentBookings || [];
@@ -81,10 +74,10 @@ export default function Dashboard({ stats: beStats, recentBookings }) {
                         <h2 className="font-headline-xl text-3xl sm:text-headline-xl text-primary mb-1 sm:mb-2 font-bold">Ringkasan Dashboard</h2>
                         <p className="text-on-surface-variant text-base sm:text-body-md">Selamat datang kembali. Berikut aktivitas di Marme Villa hari ini.</p>
                     </div>
-                    <button className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]">
+                    {/* <button className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]">
                         <span className="material-symbols-outlined text-[20px] sm:text-[18px]">add</span>
                         Booking Baru
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Stats Grid */}

@@ -48,8 +48,8 @@ export default function AdminHeader({ onMenuToggle }) {
                     >
                         <img 
                             alt="Profil Admin" 
-                            className="w-8 h-8 sm:w-8 sm:h-8 rounded-full object-cover" 
-                            src="https://lh3.googleusercontent.com/aida-public/AB6AXuDONhInVQgVpgKoEweA3rrZxtBErcKsrXCAgitZRVTsU6C6ao62nIGVVdg-ANKZud6d47gfNEWm_dSxjs3NouhsoyhPJo-PbkBLWSsvi8UIDrs-I_wtzBcG4NJ3Qy0TaYGzzeOzi-S8IbZEOshDAjU1of4J1Lm7TTU2_fkat-3vPH34P7L3su_PrYZcSplD5q5bxyqg098pWeSmZNKE926m-j2TPeUJ99eOH_XLDurV4y89enI25Bqo_s4bOntlrxugvdxKPyILoECO"
+                            className="w-8 h-8 sm:w-8 sm:h-8 rounded-full object-cover border border-outline-variant" 
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Admin')}&background=D4B47D&color=fff&bold=true`}
                         />
                         <span className="font-label-md text-label-md text-primary font-semibold hidden sm:inline">{user?.name || 'Profil Admin'}</span>
                     </button>
