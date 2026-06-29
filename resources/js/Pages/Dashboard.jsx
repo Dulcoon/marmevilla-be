@@ -1,5 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 
 export default function Dashboard({ stats: beStats, todayHighlights, recentBookings }) {
     const stats = [
@@ -195,9 +195,9 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                                                 </span>
                                             </td>
                                             <td className="py-4 px-4 sm:px-6 text-right">
-                                                <button className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low">
-                                                    <span className="material-symbols-outlined text-base sm:text-sm">more_vert</span>
-                                                </button>
+                                                <Link href={route('admin.reservations.show', booking.id)} className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low inline-block">
+                                                    <span className="material-symbols-outlined text-base sm:text-sm">visibility</span>
+                                                </Link>
                                             </td>
                                         </tr>
                                     )
@@ -240,9 +240,9 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                                     </div>
                                     
                                     {/* Action Button */}
-                                    <button className="w-full py-2.5 text-sm font-semibold text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm">
+                                    <Link href={route('admin.reservations.show', booking.id)} className="w-full py-2.5 text-sm font-semibold text-primary border border-outline-variant/60 rounded-xl hover:bg-surface-container-low transition-colors shadow-sm block text-center">
                                         Lihat Detail
-                                    </button>
+                                    </Link>
                                 </div>
                             )
                         }) : (
