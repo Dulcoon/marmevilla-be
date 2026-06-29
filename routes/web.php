@@ -4,6 +4,8 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\Admin\NotificationController;
+use App\Http\Controllers\Admin\ContactController;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -52,8 +54,14 @@ Route::middleware('auth')->group(function () {
         Route::patch('reservations/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])->name('reservations.cancel');
 
         // Notification Routes
-        Route::patch('notifications/{id}/mark-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
-        Route::patch('notifications/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+        Route::patch('notifications/{id}/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::patch('notifications/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+        
+        // Contact Routes
+        Route::get('contacts', [ContactController::class, 'index'])->name('contacts.index');
+        Route::patch('contacts/{id}/mark-as-read', [ContactController::class, 'markAsRead'])->name('contacts.mark-as-read');
+        Route::patch('contacts/mark-all-read', [ContactController::class, 'markAllAsRead'])->name('contacts.mark-all-read');
+        Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
     });
 });
 

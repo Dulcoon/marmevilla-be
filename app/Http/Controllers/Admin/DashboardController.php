@@ -46,6 +46,51 @@ class DashboardController extends Controller
         $totalCheckOutsToday = $todayCheckOuts->count();
         $waitingCheckOuts = $todayCheckOuts->whereIn('booking_status', ['checked_in', 'confirmed'])->count();
 
+        $trend = request()->query('trend', '30_days');
+
+        $chartData = [];
+        if ($trend === 'year') {
+            $startDate = Carbon::now()->startOfYear();
+            $endDate = Carbon::now()->endOfYear();
+
+            $revenueTrend = Booking::where('payment_status', 'paid')
+                ->where('booking_status', '!=', 'cancelled')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
+                ->groupBy('month')
+                ->orderBy('month', 'asc')
+                ->get();
+
+            for ($i = 1; $i <= 12; $i++) {
+                $monthData = $revenueTrend->firstWhere('month', $i);
+                $chartData[] = [
+                    'date' => Carbon::create()->month($i)->translatedFormat('M'),
+                    'revenue' => $monthData ? (int) $monthData->total : 0,
+                ];
+            }
+        } else {
+            // Default to 30_days
+            $startDate = Carbon::today()->subDays(29);
+            $endDate = Carbon::today();
+
+            $revenueTrend = Booking::where('payment_status', 'paid')
+                ->where('booking_status', '!=', 'cancelled')
+                ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+                ->selectRaw('DATE(created_at) as date, SUM(total_amount) as total')
+                ->groupBy('date')
+                ->orderBy('date', 'asc')
+                ->get();
+
+            for ($i = 0; $i < 30; $i++) {
+                $date = Carbon::today()->subDays(29 - $i)->format('Y-m-d');
+                $dayData = $revenueTrend->firstWhere('date', $date);
+                $chartData[] = [
+                    'date' => Carbon::parse($date)->translatedFormat('d M'),
+                    'revenue' => $dayData ? (int) $dayData->total : 0,
+                ];
+            }
+        }
+
         return Inertia::render('Dashboard', [
             'stats' => [
                 'totalRevenue' => (int) $totalRevenue,
@@ -65,6 +110,8 @@ class DashboardController extends Controller
                 ]
             ],
             'recentBookings' => $recentBookings,
+            'revenueTrend' => $chartData,
+            'trend' => $trend,
         ]);
     }
 }

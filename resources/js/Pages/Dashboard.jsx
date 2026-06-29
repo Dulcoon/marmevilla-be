@@ -1,7 +1,8 @@
 import AdminLayout from '@/Layouts/AdminLayout';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function Dashboard({ stats: beStats, todayHighlights, recentBookings }) {
+export default function Dashboard({ stats: beStats, todayHighlights, recentBookings, revenueTrend, trend }) {
     const stats = [
         {
             title: 'Total Pendapatan',
@@ -109,24 +110,50 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                 {/* Bento Grid: Trend Chart & Highlights */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                     {/* Chart Area */}
-                    <div className="lg:col-span-2 bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow">
+                    <div className="lg:col-span-2 bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col">
                         <div className="flex justify-between items-center mb-4 sm:mb-6">
                             <h3 className="text-xl sm:text-headline-md font-bold text-primary">Tren Pendapatan</h3>
-                            <select className="bg-surface-container-lowest border border-outline-variant rounded-md text-sm py-2 pl-3 pr-8 focus:ring-primary focus:border-primary focus:outline-none">
-                                <option>30 Hari Terakhir</option>
-                                <option>Tahun Ini</option>
+                            <select 
+                                value={trend || '30_days'}
+                                onChange={(e) => router.get(route('admin.dashboard'), { trend: e.target.value }, { preserveState: true, preserveScroll: true })}
+                                className="bg-surface-container-lowest border border-outline-variant rounded-md text-sm py-2 pl-3 pr-8 focus:ring-primary focus:border-primary focus:outline-none"
+                            >
+                                <option value="30_days">30 Hari Terakhir</option>
+                                <option value="year">Tahun Ini</option>
                             </select>
                         </div>
-                        <div className="h-[240px] sm:h-[300px] w-full bg-surface-bright rounded-lg border border-outline-variant/50 flex items-center justify-center relative overflow-hidden">
-                            {/* Grid overlay pattern */}
-                            <div 
-                                className="absolute inset-0 opacity-20" 
-                                style={{ 
-                                    backgroundImage: 'linear-gradient(#402E2A 1px, transparent 1px), linear-gradient(90deg, #402E2A 1px, transparent 1px)', 
-                                    backgroundSize: '20px 20px' 
-                                }}
-                            />
-                            <p className="text-on-surface-variant text-xs sm:text-body-sm relative z-10">[Area Visualisasi Grafik]</p>
+                        <div className="h-[240px] sm:h-[300px] w-full mt-auto">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={revenueTrend} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#402E2A" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="#402E2A" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" />
+                                    <XAxis 
+                                        dataKey="date" 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#737373', fontSize: 12 }}
+                                        tickMargin={10}
+                                        minTickGap={30}
+                                    />
+                                    <YAxis 
+                                        axisLine={false} 
+                                        tickLine={false} 
+                                        tick={{ fill: '#737373', fontSize: 12 }}
+                                        tickFormatter={(value) => `Rp${(value/1000000).toFixed(1)}Jt`}
+                                        width={80}
+                                    />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}
+                                        formatter={(value) => [new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value), 'Pendapatan']}
+                                    />
+                                    <Area type="monotone" dataKey="revenue" stroke="#402E2A" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </div>
                     </div>
 

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AdminHeader({ onMenuToggle }) {
-    const { user, unreadNotifications = [] } = usePage().props.auth;
+    const { user, unreadNotifications = [], unreadMessages = [], unreadMessagesCount = 0 } = usePage().props.auth;
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
+    const [msgOpen, setMsgOpen] = useState(false);
 
     const formatTime = (dateString) => {
         return new Date(dateString).toLocaleString('id-ID', {
@@ -42,6 +43,7 @@ export default function AdminHeader({ onMenuToggle }) {
                         onClick={() => {
                             setNotifOpen(!notifOpen);
                             setProfileOpen(false);
+                            setMsgOpen(false);
                         }}
                         className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80"
                     >
@@ -108,9 +110,88 @@ export default function AdminHeader({ onMenuToggle }) {
                     )}
                 </div>
                 
-                <button className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
-                    <span className="material-symbols-outlined">mail</span>
-                </button>
+                {/* Message Dropdown */}
+                <div className="relative">
+                    <button 
+                        onClick={() => {
+                            setMsgOpen(!msgOpen);
+                            setProfileOpen(false);
+                            setNotifOpen(false);
+                        }}
+                        className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80"
+                    >
+                        <span className="material-symbols-outlined">mail</span>
+                        {unreadMessagesCount > 0 && (
+                            <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-error rounded-full"></span>
+                        )}
+                    </button>
+
+                    {msgOpen && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setMsgOpen(false)}
+                            />
+                            <div className="absolute right-0 mt-2 w-80 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
+                                <div className="px-4 py-3 flex justify-between items-center border-b border-outline-variant/50">
+                                    <h3 className="font-bold text-primary text-sm">Kotak Masuk</h3>
+                                    {unreadMessagesCount > 0 && (
+                                        <Link
+                                            href={route('admin.contacts.mark-all-read')}
+                                            method="patch"
+                                            as="button"
+                                            className="text-xs font-semibold text-on-surface-variant hover:text-primary hover:underline"
+                                            onClick={() => setMsgOpen(false)}
+                                        >
+                                            Tandai semua dibaca
+                                        </Link>
+                                    )}
+                                </div>
+                                
+                                <div className="max-h-96 overflow-y-auto">
+                                    {unreadMessages.length > 0 ? (
+                                        unreadMessages.map((msg) => (
+                                            <Link
+                                                key={msg.id}
+                                                href={route('admin.contacts.index')}
+                                                className="w-full flex items-start gap-3 p-4 hover:bg-surface-container-lowest transition-colors text-left border-b border-outline-variant/30 last:border-0"
+                                                onClick={() => setMsgOpen(false)}
+                                            >
+                                                <span className="material-symbols-outlined mt-0.5 text-[#D4B47D]">
+                                                    person
+                                                </span>
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-on-surface font-medium leading-snug truncate">
+                                                        {msg.name}
+                                                    </p>
+                                                    <p className="text-xs text-on-surface-variant mt-1 line-clamp-2">
+                                                        {msg.message}
+                                                    </p>
+                                                    <p className="text-[10px] text-on-surface-variant mt-1.5">
+                                                        {formatTime(msg.created_at)}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-8 text-center text-on-surface-variant text-sm">
+                                            Belum ada pesan baru.
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="border-t border-outline-variant/50 p-2">
+                                    <Link 
+                                        href={route('admin.contacts.index')}
+                                        className="block text-center w-full py-2 text-sm font-semibold text-primary hover:bg-surface-container-lowest rounded-lg transition-colors"
+                                        onClick={() => setMsgOpen(false)}
+                                    >
+                                        Lihat Semua Pesan
+                                    </Link>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
 
                 <div className="h-8 w-px bg-outline-variant mx-1"></div>
 
@@ -120,6 +201,7 @@ export default function AdminHeader({ onMenuToggle }) {
                         onClick={() => {
                             setProfileOpen(!profileOpen);
                             setNotifOpen(false);
+                            setMsgOpen(false);
                         }}
                         className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-2 pr-4 sm:p-1 sm:pr-3 rounded-full transition-colors select-none focus:outline-none"
                     >
