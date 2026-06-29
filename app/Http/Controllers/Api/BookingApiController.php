@@ -11,6 +11,9 @@ use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Notification;
+use App\Notifications\NewPendingBookingNotification;
+use App\Models\User;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -240,6 +243,8 @@ class BookingApiController extends Controller
             $booking->update([
                 'midtrans_snap_token' => $snapToken
             ]);
+
+            Notification::send(User::all(), new NewPendingBookingNotification($booking));
 
             return response()->json([
                 'status' => 'success',

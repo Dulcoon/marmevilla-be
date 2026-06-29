@@ -50,6 +50,10 @@ Route::middleware('auth')->group(function () {
         Route::patch('reservations/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('reservations.update-status');
         Route::patch('reservations/{booking}/dates', [\App\Http\Controllers\BookingController::class, 'updateDates'])->name('reservations.update-dates');
         Route::patch('reservations/{booking}/cancel', [\App\Http\Controllers\BookingController::class, 'cancel'])->name('reservations.cancel');
+
+        // Notification Routes
+        Route::patch('notifications/{id}/mark-as-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('notifications.mark-as-read');
+        Route::patch('notifications/mark-all-read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
     });
 });
 

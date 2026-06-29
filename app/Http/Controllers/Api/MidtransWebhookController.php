@@ -8,8 +8,12 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Notification;
 use App\Mail\BookingConfirmed;
 use App\Mail\AdminBookingNotification;
+use App\Models\User;
+use App\Notifications\BookingConfirmedNotification;
+use App\Notifications\BookingExpiredNotification;
 
 class MidtransWebhookController extends Controller
 {
@@ -50,6 +54,8 @@ class MidtransWebhookController extends Controller
                     if ($adminEmail) {
                         Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
                     }
+
+                    Notification::send(User::all(), new BookingConfirmedNotification($booking));
                 }
             }
         } else if ($transactionStatus == 'settlement') {
@@ -65,12 +71,19 @@ class MidtransWebhookController extends Controller
                 if ($adminEmail) {
                     Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
                 }
+
+                Notification::send(User::all(), new BookingConfirmedNotification($booking));
             }
         } else if (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
+            $wasNotCancelled = $booking->booking_status !== 'cancelled';
             $booking->update([
                 'payment_status' => 'failed',
                 'booking_status' => 'cancelled'
             ]);
+            
+            if ($wasNotCancelled) {
+                Notification::send(User::all(), new BookingExpiredNotification($booking));
+            }
         } else if ($transactionStatus == 'refund') {
             $booking->update(['payment_status' => 'refunded']);
         } else if ($transactionStatus == 'pending') {

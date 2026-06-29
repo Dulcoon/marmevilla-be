@@ -2,8 +2,15 @@ import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AdminHeader({ onMenuToggle }) {
-    const user = usePage().props.auth.user;
+    const { user, unreadNotifications = [] } = usePage().props.auth;
     const [profileOpen, setProfileOpen] = useState(false);
+    const [notifOpen, setNotifOpen] = useState(false);
+
+    const formatTime = (dateString) => {
+        return new Date(dateString).toLocaleString('id-ID', {
+            day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+        });
+    };
 
     return (
         <header className="sticky top-0 z-40 w-full bg-surface-bright border-b border-outline-variant shadow-sm flex justify-between items-center h-16 px-6 transition-colors">
@@ -29,10 +36,77 @@ export default function AdminHeader({ onMenuToggle }) {
 
             {/* Right Section: Actions & Profile */}
             <div className="flex items-center gap-2 sm:gap-4">
-                <button className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80">
-                    <span className="material-symbols-outlined">notifications</span>
-                    <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-error rounded-full"></span>
-                </button>
+                {/* Notification Dropdown */}
+                <div className="relative">
+                    <button 
+                        onClick={() => {
+                            setNotifOpen(!notifOpen);
+                            setProfileOpen(false);
+                        }}
+                        className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80"
+                    >
+                        <span className="material-symbols-outlined">notifications</span>
+                        {unreadNotifications.length > 0 && (
+                            <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-error rounded-full"></span>
+                        )}
+                    </button>
+
+                    {notifOpen && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-10" 
+                                onClick={() => setNotifOpen(false)}
+                            />
+                            <div className="absolute right-0 mt-2 w-80 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
+                                <div className="px-4 py-3 flex justify-between items-center border-b border-outline-variant/50">
+                                    <h3 className="font-bold text-primary text-sm">Notifikasi</h3>
+                                    {unreadNotifications.length > 0 && (
+                                        <Link
+                                            href={route('admin.notifications.mark-all-read')}
+                                            method="patch"
+                                            as="button"
+                                            className="text-xs font-semibold text-on-surface-variant hover:text-primary hover:underline"
+                                            onClick={() => setNotifOpen(false)}
+                                        >
+                                            Tandai semua dibaca
+                                        </Link>
+                                    )}
+                                </div>
+                                
+                                <div className="max-h-96 overflow-y-auto">
+                                    {unreadNotifications.length > 0 ? (
+                                        unreadNotifications.map((notif) => (
+                                            <Link
+                                                key={notif.id}
+                                                href={route('admin.notifications.mark-as-read', notif.id)}
+                                                method="patch"
+                                                as="button"
+                                                className="w-full flex items-start gap-3 p-4 hover:bg-surface-container-lowest transition-colors text-left border-b border-outline-variant/30 last:border-0"
+                                                onClick={() => setNotifOpen(false)}
+                                            >
+                                                <span className={`material-symbols-outlined mt-0.5 ${notif.data.color || 'text-primary'}`}>
+                                                    {notif.data.icon || 'notifications'}
+                                                </span>
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-on-surface font-medium leading-snug">
+                                                        {notif.data.message}
+                                                    </p>
+                                                    <p className="text-xs text-on-surface-variant mt-1">
+                                                        {formatTime(notif.created_at)}
+                                                    </p>
+                                                </div>
+                                            </Link>
+                                        ))
+                                    ) : (
+                                        <div className="p-8 text-center text-on-surface-variant text-sm">
+                                            Belum ada notifikasi baru.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
                 
                 <button className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors cursor-pointer active:opacity-80">
                     <span className="material-symbols-outlined">mail</span>
@@ -43,7 +117,10 @@ export default function AdminHeader({ onMenuToggle }) {
                 {/* Profile Dropdown */}
                 <div className="relative">
                     <button 
-                        onClick={() => setProfileOpen(!profileOpen)}
+                        onClick={() => {
+                            setProfileOpen(!profileOpen);
+                            setNotifOpen(false);
+                        }}
                         className="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-2 pr-4 sm:p-1 sm:pr-3 rounded-full transition-colors select-none focus:outline-none"
                     >
                         <img 
