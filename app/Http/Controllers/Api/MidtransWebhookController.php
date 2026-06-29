@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\BookingConfirmed;
+use App\Mail\AdminBookingNotification;
 
 class MidtransWebhookController extends Controller
 {
@@ -43,6 +45,11 @@ class MidtransWebhookController extends Controller
                 ]);
                 if ($wasNotConfirmed) {
                     Mail::to($booking->guest_email)->send(new BookingConfirmed($booking));
+
+                    $adminEmail = Setting::where('key', 'admin_email')->value('value');
+                    if ($adminEmail) {
+                        Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
+                    }
                 }
             }
         } else if ($transactionStatus == 'settlement') {
@@ -53,6 +60,11 @@ class MidtransWebhookController extends Controller
             ]);
             if ($wasNotConfirmed) {
                 Mail::to($booking->guest_email)->send(new BookingConfirmed($booking));
+
+                $adminEmail = Setting::where('key', 'admin_email')->value('value');
+                if ($adminEmail) {
+                    Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
+                }
             }
         } else if (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $booking->update([
