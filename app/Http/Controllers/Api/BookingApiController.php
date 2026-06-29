@@ -13,6 +13,7 @@ use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\DB;
 use App\Notifications\NewPendingBookingNotification;
 use App\Models\User;
 use Midtrans\Config;
@@ -186,78 +187,134 @@ class BookingApiController extends Controller
             'voucher_code' => 'nullable|string'
         ]);
 
-        // Re-run availability and pricing check securely on server side
-        $availabilityResponse = $this->checkAvailability($request);
-        $availabilityData = json_decode($availabilityResponse->getContent(), true);
-
-        if ($availabilityResponse->getStatusCode() !== 200 || !$availabilityData['data']['available']) {
-            return response()->json(['status' => 'error', 'message' => 'Villa is no longer available or invalid input'], 400);
-        }
-
-        $pricing = $availabilityData['data']['pricing'];
-        $discount = $availabilityData['data']['discount'];
-        $grandTotal = $availabilityData['data']['grand_total'];
-        $voucherId = $availabilityData['data']['voucher_id'];
-
-        $orderId = 'TRX-' . time() . '-' . strtoupper(Str::random(5));
-        $bookingCode = 'BK-' . strtoupper(Str::random(8));
-
-        $villa = Villa::where('slug', $request->villa_slug)->firstOrFail();
-
-        $booking = Booking::create([
-            'booking_code' => $bookingCode,
-            'villa_id' => $villa->id,
-            'check_in' => $request->check_in,
-            'check_out' => $request->check_out,
-            'guest_name' => $request->guest_name,
-            'guest_email' => $request->guest_email,
-            'guest_phone' => $request->guest_phone,
-            'special_requests' => $request->special_requests,
-            'guest_count' => $request->guests,
-            'extra_guests' => $pricing['extra_guests'],
-            'base_price_total' => $pricing['base_price_total'],
-            'extra_charge_total' => $pricing['extra_charge_total'],
-            'voucher_id' => $voucherId,
-            'discount_amount' => $discount,
-            'total_amount' => $grandTotal,
-            'payment_status' => 'pending',
-            'booking_status' => 'pending',
-            'midtrans_order_id' => $orderId
-        ]);
-
-        // Midtrans Setup
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = config('midtrans.is_production');
-        Config::$isSanitized = config('midtrans.is_sanitized');
-        Config::$is3ds = config('midtrans.is_3ds');
-
-        $expiryMinutes = Setting::where('key', 'midtrans_expiry_minutes')->value('value') ?? 1440;
-
-        $params = [
-            'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => $grandTotal,
-            ],
-            'customer_details' => [
-                'first_name' => $request->guest_name,
-                'email' => $request->guest_email,
-                'phone' => $request->guest_phone,
-            ],
-            'item_details' => [
-                [
-                    'id' => $villa->id,
-                    'price' => $grandTotal,
-                    'quantity' => 1,
-                    'name' => 'Booking: ' . $villa->name . ' (' . $pricing['nights'] . ' nights)'
-                ]
-            ],
-            'expiry' => [
-                'unit' => 'minute',
-                'duration' => (int) $expiryMinutes
-            ]
-        ];
+        $booking = null;
 
         try {
+            $transactionResult = DB::transaction(function () use ($request) {
+                // Lock the villa row to prevent concurrent bookings
+                $villa = Villa::where('slug', $request->villa_slug)->lockForUpdate()->firstOrFail();
+
+                // 1. Re-validate availability inside transaction
+                $hasBooking = Booking::where('villa_id', $villa->id)
+                    ->whereIn('booking_status', ['confirmed', 'pending'])
+                    ->where(function ($query) use ($request) {
+                        $query->where('check_in', '<', $request->check_out)
+                              ->where('check_out', '>', $request->check_in);
+                    })->exists();
+
+                $isBlocked = BlockedDate::where('villa_id', $villa->id)
+                    ->where(function ($query) use ($request) {
+                        $query->where('start_date', '<', $request->check_out)
+                              ->where('end_date', '>', $request->check_in);
+                    })->exists();
+
+                if ($hasBooking || $isBlocked) {
+                    throw new \Exception('Villa tidak tersedia pada rentang tanggal yang dipilih.');
+                }
+
+                // 2. Validate guests capacity
+                if ($request->guests > $villa->max_guests) {
+                    throw new \Exception('Jumlah tamu melebihi kapasitas maksimum villa.');
+                }
+
+                // 3. Calculate pricing
+                $pricing = $this->calculatePrice($villa, $request->check_in, $request->check_out, $request->guests);
+
+                // 4. Validate voucher (if any)
+                $discount = 0;
+                $voucherId = null;
+                if ($request->voucher_code) {
+                    // Normalize voucher code to uppercase for PostgreSQL case sensitivity
+                    $voucherCode = strtoupper($request->voucher_code);
+                    $voucher = Voucher::where('code', $voucherCode)
+                        ->where('is_active', true)
+                        ->where('start_date', '<=', now())
+                        ->where('end_date', '>=', now())
+                        ->where(function ($query) {
+                            $query->whereNull('usage_limit')
+                                  ->orWhereColumn('used_count', '<', 'usage_limit');
+                        })
+                        ->first();
+
+                    if (!$voucher) {
+                        throw new \Exception('Voucher tidak valid atau kuota penggunaan sudah habis.');
+                    }
+
+                    $voucherId = $voucher->id;
+                    $discount = $voucher->discount_amount;
+                }
+
+                $grandTotal = max(0, $pricing['total'] - $discount);
+                $orderId = 'TRX-' . time() . '-' . strtoupper(Str::random(5));
+                $bookingCode = 'BK-' . strtoupper(Str::random(8));
+
+                // 5. Create booking row in database
+                $bookingCreated = Booking::create([
+                    'booking_code' => $bookingCode,
+                    'villa_id' => $villa->id,
+                    'check_in' => $request->check_in,
+                    'check_out' => $request->check_out,
+                    'guest_name' => $request->guest_name,
+                    'guest_email' => $request->guest_email,
+                    'guest_phone' => $request->guest_phone,
+                    'special_requests' => $request->special_requests,
+                    'guest_count' => $request->guests,
+                    'extra_guests' => $pricing['extra_guests'],
+                    'base_price_total' => $pricing['base_price_total'],
+                    'extra_charge_total' => $pricing['extra_charge_total'],
+                    'voucher_id' => $voucherId,
+                    'discount_amount' => $discount,
+                    'total_amount' => $grandTotal,
+                    'payment_status' => 'pending',
+                    'booking_status' => 'pending',
+                    'midtrans_order_id' => $orderId
+                ]);
+
+                return [
+                    'booking' => $bookingCreated,
+                    'grand_total' => $grandTotal,
+                    'pricing' => $pricing,
+                    'villa' => $villa
+                ];
+            });
+
+            $booking = $transactionResult['booking'];
+            $grandTotal = $transactionResult['grand_total'];
+            $pricing = $transactionResult['pricing'];
+            $villa = $transactionResult['villa'];
+
+            // Midtrans Setup
+            Config::$serverKey = config('midtrans.server_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized = config('midtrans.is_sanitized');
+            Config::$is3ds = config('midtrans.is_3ds');
+
+            $expiryMinutes = Setting::where('key', 'midtrans_expiry_minutes')->value('value') ?? 1440;
+
+            $params = [
+                'transaction_details' => [
+                    'order_id' => $booking->midtrans_order_id,
+                    'gross_amount' => $grandTotal,
+                ],
+                'customer_details' => [
+                    'first_name' => $request->guest_name,
+                    'email' => $request->guest_email,
+                    'phone' => $request->guest_phone,
+                ],
+                'item_details' => [
+                    [
+                        'id' => $villa->id,
+                        'price' => $grandTotal,
+                        'quantity' => 1,
+                        'name' => 'Booking: ' . $villa->name . ' (' . $pricing['nights'] . ' nights)'
+                    ]
+                ],
+                'expiry' => [
+                    'unit' => 'minute',
+                    'duration' => (int) $expiryMinutes
+                ]
+            ];
+
             $snapToken = Snap::getSnapToken($params);
             
             $booking->update([
@@ -273,7 +330,13 @@ class BookingApiController extends Controller
                     'snap_token' => $snapToken
                 ]
             ]);
+
         } catch (\Exception $e) {
+            // Rollback/delete the booking if it was successfully created in the DB but Midtrans failed afterwards
+            if ($booking) {
+                $booking->delete();
+            }
+
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }

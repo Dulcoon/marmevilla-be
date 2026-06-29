@@ -56,6 +56,10 @@ class MidtransWebhookController extends Controller
                     }
 
                     Notification::send(User::all(), new BookingConfirmedNotification($booking));
+
+                    if ($booking->voucher_id) {
+                        $booking->voucher()->increment('used_count');
+                    }
                 }
             }
         } else if ($transactionStatus == 'settlement') {
@@ -73,6 +77,10 @@ class MidtransWebhookController extends Controller
                 }
 
                 Notification::send(User::all(), new BookingConfirmedNotification($booking));
+
+                if ($booking->voucher_id) {
+                    $booking->voucher()->increment('used_count');
+                }
             }
         } else if (in_array($transactionStatus, ['cancel', 'deny', 'expire'])) {
             $wasNotCancelled = $booking->booking_status !== 'cancelled';
@@ -86,6 +94,9 @@ class MidtransWebhookController extends Controller
             }
         } else if ($transactionStatus == 'refund') {
             $booking->update(['payment_status' => 'refunded']);
+            if ($booking->voucher_id) {
+                $booking->voucher()->decrement('used_count');
+            }
         } else if ($transactionStatus == 'pending') {
             $booking->update(['payment_status' => 'pending']);
         }
