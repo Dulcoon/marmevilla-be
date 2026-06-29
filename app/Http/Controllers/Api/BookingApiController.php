@@ -7,6 +7,7 @@ use App\Models\Booking;
 use App\Models\Setting;
 use App\Models\Villa;
 use App\Models\Voucher;
+use App\Models\BlockedDate;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Illuminate\Http\Request;
@@ -87,7 +88,14 @@ class BookingApiController extends Controller
                       ->where('check_out', '>', $request->check_in);
             })->exists();
 
-        if ($hasBooking) {
+        // Check if dates are manually blocked
+        $isBlocked = BlockedDate::where('villa_id', $villa->id)
+            ->where(function ($query) use ($request) {
+                $query->where('start_date', '<', $request->check_out)
+                      ->where('end_date', '>', $request->check_in);
+            })->exists();
+
+        if ($hasBooking || $isBlocked) {
             return response()->json(['status' => 'error', 'message' => 'Dates are not available'], 400);
         }
 
@@ -140,6 +148,18 @@ class BookingApiController extends Controller
 
         foreach ($bookings as $booking) {
             $period = CarbonPeriod::create($booking->check_in, Carbon::parse($booking->check_out)->subDay());
+            foreach ($period as $date) {
+                $bookedDates[] = $date->format('Y-m-d');
+            }
+        }
+
+        // Get all active/upcoming blocked dates
+        $blockedDates = BlockedDate::where('villa_id', $villa->id)
+            ->where('end_date', '>', today())
+            ->get();
+
+        foreach ($blockedDates as $blocked) {
+            $period = CarbonPeriod::create($blocked->start_date, Carbon::parse($blocked->end_date)->subDay());
             foreach ($period as $date) {
                 $bookedDates[] = $date->format('Y-m-d');
             }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\Villa;
+use App\Models\BlockedDate;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Carbon\Carbon;
@@ -88,6 +89,15 @@ class BookingController extends Controller
             }
         }
 
+        // Get blocked dates for the villa
+        $blockedDates = BlockedDate::where('villa_id', $booking->villa_id)->get();
+        foreach ($blockedDates as $b) {
+            $period = CarbonPeriod::create($b->start_date, Carbon::parse($b->end_date)->subDay());
+            foreach ($period as $date) {
+                $bookedDates[] = $date->format('Y-m-d');
+            }
+        }
+
         return Inertia::render('Admin/Reservation/Show', [
             'booking' => $booking,
             'bookedDates' => $bookedDates,
@@ -162,6 +172,17 @@ class BookingController extends Controller
 
         if ($hasBooking) {
             return back()->with('error', 'Tanggal yang dipilih sudah dipesan oleh orang lain.');
+        }
+
+        // Check if dates are blocked
+        $isBlocked = BlockedDate::where('villa_id', $booking->villa_id)
+            ->where(function ($query) use ($newCheckIn, $newCheckOut) {
+                $query->where('start_date', '<', $newCheckOut->format('Y-m-d'))
+                      ->where('end_date', '>', $newCheckIn->format('Y-m-d'));
+            })->exists();
+
+        if ($isBlocked) {
+            return back()->with('error', 'Tanggal yang dipilih tidak tersedia (diblokir oleh admin).');
         }
 
         $booking->update([

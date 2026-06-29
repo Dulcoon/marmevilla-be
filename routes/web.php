@@ -39,6 +39,11 @@ Route::middleware('auth')->group(function () {
         Route::post('pricing/{villa}/custom-prices', [\App\Http\Controllers\PricingRuleController::class, 'storeCustomPrice'])->name('pricing.custom-prices.store');
         Route::delete('pricing/{villa}/custom-prices/{customPrice}', [\App\Http\Controllers\PricingRuleController::class, 'destroyCustomPrice'])->name('pricing.custom-prices.destroy');
 
+        // Blocked Dates Routes
+        Route::get('blocked-dates', [\App\Http\Controllers\Admin\BlockedDateController::class, 'index'])->name('blocked-dates.index');
+        Route::post('blocked-dates/{villa}', [\App\Http\Controllers\Admin\BlockedDateController::class, 'store'])->name('blocked-dates.store');
+        Route::delete('blocked-dates/{villa}/{blockedDate}', [\App\Http\Controllers\Admin\BlockedDateController::class, 'destroy'])->name('blocked-dates.destroy');
+
         // Voucher Routes
         Route::resource('vouchers', \App\Http\Controllers\VoucherController::class)->except(['create', 'show', 'edit']);
 

@@ -29,6 +29,11 @@ class Villa extends Model
         return $this->hasMany(VillaCustomPrice::class)->orderBy('start_date', 'asc');
     }
 
+    public function blockedDates()
+    {
+        return $this->hasMany(BlockedDate::class)->orderBy('start_date', 'asc');
+    }
+
     public function facilities()
     {
         return $this->belongsToMany(VillaFacility::class, 'villa_facility_items', 'villa_id', 'facility_id');
