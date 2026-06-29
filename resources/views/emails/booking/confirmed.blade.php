@@ -14,7 +14,7 @@ Terima kasih atas pesanan Anda di Marme Villa Jogja! Pembayaran Anda telah berha
 - **Jumlah Tamu:** {{ $booking->guest_count + $booking->extra_guests }} orang
 - **Total Pembayaran:** Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
 
-<x-mail::button :url="config('app.frontend_url', 'http://localhost:5173')">
+<x-mail::button :url="config('app.frontend_url')">
 Kunjungi Website Kami
 </x-mail::button>
 

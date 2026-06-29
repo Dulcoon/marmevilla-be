@@ -16,7 +16,7 @@ Terdapat reservasi baru yang telah berhasil dibayar dan dikonfirmasi di Marme Vi
 - **Jumlah Tamu:** {{ $booking->guest_count + $booking->extra_guests }} orang
 - **Total Pembayaran:** Rp {{ number_format($booking->total_amount, 0, ',', '.') }}
 
-<x-mail::button :url="config('app.frontend_url', 'http://localhost:5173') . '/admin/bookings'">
+<x-mail::button :url="config('app.url') . '/admin/reservations'">
 Lihat Detail Reservasi di Dashboard
 </x-mail::button>
 
