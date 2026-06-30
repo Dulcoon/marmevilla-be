@@ -119,7 +119,12 @@ class DokuService
             'body' => $response->body(),
         ]);
 
-        throw new \Exception('DOKU API Error: ' . ($response->json('message') ?? $response->body()));
+        $errorMessage = $response->json('message') ?? $response->body();
+        if (is_array($errorMessage)) {
+            $errorMessage = implode(', ', $errorMessage);
+        }
+
+        throw new \Exception('DOKU API Error: ' . $errorMessage);
     }
 
     /**
