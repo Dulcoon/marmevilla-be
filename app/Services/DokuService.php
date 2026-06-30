@@ -87,7 +87,7 @@ class DokuService
             'Request-Timestamp' => $timestamp,
             'Signature' => $signature,
             'Content-Type' => 'application/json',
-        ])->post($this->baseUrl . $targetPath, $body);
+        ])->withBody($jsonBody, 'application/json')->post($this->baseUrl . $targetPath);
 
         if ($response->successful()) {
             return $response->json();
