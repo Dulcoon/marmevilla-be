@@ -43,6 +43,18 @@ class DokuService
         $timestamp = gmdate("Y-m-d\TH:i:s\Z");
         $targetPath = '/checkout/v1/payment';
 
+        $booking->loadMissing('villa');
+        $queryParams = [
+            'room' => $booking->villa->slug,
+            'checkIn' => $booking->check_in ? $booking->check_in->format('Y-m-d') : '',
+            'checkOut' => $booking->check_out ? $booking->check_out->format('Y-m-d') : '',
+            'guests' => (int) $booking->guest_count,
+            'name' => $booking->guest_name,
+            'email' => $booking->guest_email,
+            'bookingCode' => $booking->booking_code,
+            'total' => (int) $booking->total_amount,
+        ];
+
         $body = [
             'order' => [
                 'amount' => (int) $amount,
