@@ -64,6 +64,9 @@ class DokuService
             'payment' => [
                 'payment_due_date' => (int) $expiryMinutes,
             ],
+            'additional_info' => [
+                'override_notification_url' => url('/api/doku/webhook'),
+            ]
         ];
 
         $jsonBody = json_encode($body, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
