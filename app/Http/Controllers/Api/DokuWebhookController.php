@@ -33,6 +33,7 @@ class DokuWebhookController extends Controller
         $signatureHeader = $request->header('Signature');
         $requestId = $request->header('Request-Id');
         $timestamp = $request->header('Request-Timestamp');
+        $targetPath = $request->header('Request-Target') ?? '/api/doku/webhook';
 
         // 1. Verify Webhook Signature Authenticity
         $isValid = $this->dokuService->verifyWebhookSignature(
@@ -40,7 +41,7 @@ class DokuWebhookController extends Controller
             $requestId,
             $timestamp,
             $rawPayload,
-            '/api/doku/webhook'
+            $targetPath
         );
 
         if (!$isValid) {
