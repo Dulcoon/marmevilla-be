@@ -149,7 +149,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                 <div className="grid lg:grid-cols-3 gap-6">
 
                     {/* Left: Booking Details */}
-                    <div className="lg:col-span-2 space-y-5">
+                    <div className="lg:col-span-2 space-y-5 min-w-0">
 
                         {/* Status Badges */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow flex flex-wrap gap-3">
