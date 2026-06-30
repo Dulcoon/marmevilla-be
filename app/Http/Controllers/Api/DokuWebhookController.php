@@ -62,13 +62,34 @@ class DokuWebhookController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Booking not found'], 404);
         }
 
-        // 3. Process Status
         $dokuStatus = strtoupper($notification['transaction']['status'] ?? 'FAILED');
         $transactionId = $notification['transaction']['id'] ?? $requestId;
-        $paymentType = $notification['payment']['channel_id'] ?? 'DOKU Checkout';
+        
+        $paymentTypeRaw = $notification['payment']['payment_channel'] 
+            ?? $notification['payment']['channel_id'] 
+            ?? $notification['payment']['payment_method'] 
+            ?? 'DOKU Checkout';
+
+        $paymentMap = [
+            'VIRTUAL_ACCOUNT_BCA' => 'BCA Virtual Account',
+            'VIRTUAL_ACCOUNT_BANK_MANDIRI' => 'Mandiri Virtual Account',
+            'VIRTUAL_ACCOUNT_BNI' => 'BNI Virtual Account',
+            'VIRTUAL_ACCOUNT_BRI' => 'BRI Virtual Account',
+            'VIRTUAL_ACCOUNT_BANK_PERMATA' => 'Permata Virtual Account',
+            'VIRTUAL_ACCOUNT_CIMB' => 'CIMB Virtual Account',
+            'VIRTUAL_ACCOUNT_DANAMON' => 'Danamon Virtual Account',
+            'QRIS' => 'QRIS',
+            'CREDIT_CARD' => 'Kartu Kredit',
+            'EMONEY_OVO' => 'OVO',
+            'EMONEY_DANA' => 'DANA',
+            'EMONEY_LINKAJA' => 'LinkAja',
+            'EMONEY_SHOPEE_PAY' => 'ShopeePay',
+        ];
+
+        $paymentType = $paymentMap[strtoupper($paymentTypeRaw)] ?? str_replace('_', ' ', strtoupper($paymentTypeRaw));
         $amount = $notification['transaction']['amount'] ?? $booking->total_amount;
 
-        Log::info("DOKU Webhook: Status for booking {$invoiceNumber} is {$dokuStatus}");
+        Log::info("DOKU Webhook: Status for booking {$invoiceNumber} is {$dokuStatus}, method: {$paymentType}");
 
         if ($dokuStatus === 'SUCCESS') {
             $this->paymentService->confirmPayment(
