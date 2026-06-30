@@ -47,6 +47,7 @@ class DokuService
             'order' => [
                 'amount' => (int) $amount,
                 'invoice_number' => $booking->booking_code,
+                'callback_url' => env('FRONTEND_URL', 'http://localhost:5173') . '/booking/success?booking_code=' . $booking->booking_code,
             ],
             'payment' => [
                 'payment_due_date' => (int) $expiryMinutes,
