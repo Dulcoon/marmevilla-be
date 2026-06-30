@@ -301,10 +301,10 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                                                                 {payment.provider}
                                                             </span>
                                                         </td>
-                                                        <td className="py-3 px-3">
-                                                            <p className="font-mono text-xs font-semibold text-on-surface">{payment.order_id}</p>
+                                                        <td className="py-3 px-3 max-w-[200px]">
+                                                            <p className="font-mono text-xs font-semibold text-on-surface break-all">{payment.order_id}</p>
                                                             {payment.transaction_id && (
-                                                                <p className="text-[10px] text-on-surface-variant mt-0.5 font-mono">TX: {payment.transaction_id}</p>
+                                                                <p className="text-[10px] text-on-surface-variant mt-0.5 font-mono break-all">TX: {payment.transaction_id}</p>
                                                             )}
                                                         </td>
                                                         <td className="py-3 px-3 text-xs text-on-surface font-medium capitalize">
