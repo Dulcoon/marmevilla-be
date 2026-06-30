@@ -283,58 +283,118 @@ class BookingApiController extends Controller
             $pricing = $transactionResult['pricing'];
             $villa = $transactionResult['villa'];
 
-            // Midtrans Setup
-            Config::$serverKey = config('midtrans.server_key');
-            Config::$isProduction = config('midtrans.is_production');
-            Config::$isSanitized = config('midtrans.is_sanitized');
-            Config::$is3ds = config('midtrans.is_3ds');
+            $activeGateway = Setting::where('key', 'active_payment_gateway')->value('value') ?? 'midtrans';
 
-            $expiryMinutes = Setting::where('key', 'midtrans_expiry_minutes')->value('value') ?? 1440;
+            if ($activeGateway === 'doku') {
+                $dokuService = app(\App\Services\DokuService::class);
+                $expiryMinutes = Setting::where('key', 'doku_expiry_minutes')->value('value') ?? 60;
+                
+                $dokuResponse = $dokuService->createCheckoutUrl($booking, $grandTotal, $expiryMinutes);
+                $paymentUrl = $dokuResponse['payment']['url'] ?? null;
 
-            $params = [
-                'transaction_details' => [
+                if (!$paymentUrl) {
+                    throw new \Exception('Gagal mendapatkan URL pembayaran dari DOKU.');
+                }
+
+                // Record payment attempt
+                $booking->payments()->create([
+                    'provider' => 'doku',
+                    'order_id' => $booking->booking_code,
+                    'gross_amount' => $grandTotal,
+                    'transaction_status' => 'pending',
+                    'snap_token' => $paymentUrl,
+                    'raw_response' => $dokuResponse,
+                ]);
+
+                try {
+                    Notification::send(User::all(), new NewPendingBookingNotification($booking));
+                } catch (\Exception $e) {
+                    Log::error("BookingApiController: Failed to send new pending booking notification: " . $e->getMessage());
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'data' => [
+                        'booking' => $booking,
+                        'payment_gateway' => 'doku',
+                        'payment_url' => $paymentUrl
+                    ]
+                ]);
+            } else {
+                // Midtrans Setup dynamically from settings with fallback to env config
+                $serverKey = Setting::where('key', 'midtrans_server_key')->value('value') ?? config('midtrans.server_key');
+                $isProduction = filter_var(Setting::where('key', 'midtrans_is_production')->value('value') ?? config('midtrans.is_production', false), FILTER_VALIDATE_BOOLEAN);
+
+                Config::$serverKey = $serverKey;
+                Config::$isProduction = $isProduction;
+                Config::$isSanitized = config('midtrans.is_sanitized', true);
+                Config::$is3ds = config('midtrans.is_3ds', true);
+
+                $expiryMinutes = Setting::where('key', 'midtrans_expiry_minutes')->value('value') ?? 1440;
+
+                $params = [
+                    'transaction_details' => [
+                        'order_id' => $booking->midtrans_order_id,
+                        'gross_amount' => $grandTotal,
+                    ],
+                    'customer_details' => [
+                        'first_name' => $request->guest_name,
+                        'email' => $request->guest_email,
+                        'phone' => $request->guest_phone,
+                    ],
+                    'item_details' => [
+                        [
+                            'id' => $villa->id,
+                            'price' => $grandTotal,
+                            'quantity' => 1,
+                            'name' => 'Booking: ' . $villa->name . ' (' . $pricing['nights'] . ' nights)'
+                        ]
+                    ],
+                    'expiry' => [
+                        'unit' => 'minute',
+                        'duration' => (int) $expiryMinutes
+                    ]
+                ];
+
+                $snapToken = Snap::getSnapToken($params);
+                
+                $booking->update([
+                    'midtrans_snap_token' => $snapToken
+                ]);
+
+                // Record payment attempt
+                $booking->payments()->create([
+                    'provider' => 'midtrans',
                     'order_id' => $booking->midtrans_order_id,
                     'gross_amount' => $grandTotal,
-                ],
-                'customer_details' => [
-                    'first_name' => $request->guest_name,
-                    'email' => $request->guest_email,
-                    'phone' => $request->guest_phone,
-                ],
-                'item_details' => [
-                    [
-                        'id' => $villa->id,
-                        'price' => $grandTotal,
-                        'quantity' => 1,
-                        'name' => 'Booking: ' . $villa->name . ' (' . $pricing['nights'] . ' nights)'
+                    'transaction_status' => 'pending',
+                    'snap_token' => $snapToken,
+                ]);
+
+                try {
+                    Notification::send(User::all(), new NewPendingBookingNotification($booking));
+                } catch (\Exception $e) {
+                    Log::error("BookingApiController: Failed to send new pending booking notification: " . $e->getMessage());
+                }
+
+                return response()->json([
+                    'status' => 'success',
+                    'data' => [
+                        'booking' => $booking,
+                        'payment_gateway' => 'midtrans',
+                        'snap_token' => $snapToken
                     ]
-                ],
-                'expiry' => [
-                    'unit' => 'minute',
-                    'duration' => (int) $expiryMinutes
-                ]
-            ];
-
-            $snapToken = Snap::getSnapToken($params);
-            
-            $booking->update([
-                'midtrans_snap_token' => $snapToken
-            ]);
-
-            Notification::send(User::all(), new NewPendingBookingNotification($booking));
-
-            return response()->json([
-                'status' => 'success',
-                'data' => [
-                    'booking' => $booking,
-                    'snap_token' => $snapToken
-                ]
-            ]);
+                ]);
+            }
 
         } catch (\Exception $e) {
-            // Rollback/delete the booking if it was successfully created in the DB but Midtrans failed afterwards
+            // Rollback/delete the booking if it was successfully created in the DB but payment API failed afterwards
             if ($booking) {
-                $booking->delete();
+                try {
+                    $booking->delete();
+                } catch (\Exception $delEx) {
+                    Log::error("BookingApiController: Failed to rollback booking record: " . $delEx->getMessage());
+                }
             }
 
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);

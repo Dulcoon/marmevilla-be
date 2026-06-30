@@ -73,7 +73,9 @@ class BookingController extends Controller
      */
     public function show(Booking $booking)
     {
-        $booking->load(['villa.images', 'voucher']);
+        $booking->load(['villa.images', 'voucher', 'payments' => function ($q) {
+            $q->latest();
+        }]);
 
         // Get booked dates for the villa, EXCLUDING the current booking
         $otherBookings = Booking::where('villa_id', $booking->villa_id)

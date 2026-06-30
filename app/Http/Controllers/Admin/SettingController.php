@@ -21,7 +21,15 @@ class SettingController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'active_payment_gateway' => 'required|string|in:midtrans,doku',
+            'midtrans_server_key' => 'nullable|string',
+            'midtrans_client_key' => 'nullable|string',
+            'midtrans_is_production' => 'required|string|in:true,false,1,0',
             'midtrans_expiry_minutes' => 'required|integer|min:1',
+            'doku_client_id' => 'nullable|string',
+            'doku_secret_key' => 'nullable|string',
+            'doku_is_production' => 'required|string|in:true,false,1,0',
+            'doku_expiry_minutes' => 'required|integer|min:1',
             'admin_email' => 'required|email',
         ]);
 

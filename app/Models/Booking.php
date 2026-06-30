@@ -49,4 +49,9 @@ class Booking extends Model
     {
         return $this->belongsTo(Voucher::class);
     }
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
 }

@@ -249,7 +249,97 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                                 <span className="text-xs text-on-surface-variant uppercase tracking-wide font-medium w-40 shrink-0">Total Pembayaran</span>
                                 <span className="text-lg font-bold text-primary">{formatIDR(booking.total_amount)}</span>
                             </div>
-                            <InfoRow label="Midtrans Order ID" value={booking.midtrans_order_id} />
+                        </div>
+
+                        {/* Riwayat Pembayaran (Payment attempts logs) */}
+                        <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
+                            <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[18px]">history_edu</span>
+                                Riwayat Transaksi (Payment Gateway)
+                            </h3>
+
+                            {booking.payments && booking.payments.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-sm border-collapse">
+                                        <thead>
+                                            <tr className="border-b border-outline-variant/50 text-xs text-on-surface-variant font-bold uppercase">
+                                                <th className="py-2.5 px-3">Gateway</th>
+                                                <th className="py-2.5 px-3">Order ID / ID Transaksi</th>
+                                                <th className="py-2.5 px-3">Metode</th>
+                                                <th className="py-2.5 px-3">Nominal</th>
+                                                <th className="py-2.5 px-3">Status</th>
+                                                <th className="py-2.5 px-3">Tanggal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-outline-variant/30">
+                                            {booking.payments.map((payment) => {
+                                                const providerBadge = payment.provider === 'doku'
+                                                    ? 'bg-red-50 text-[#DE2117] border border-[#DE2117]/20'
+                                                    : 'bg-blue-50 text-blue-700 border border-blue-200';
+                                                
+                                                let statusBadge = 'bg-gray-100 text-gray-700';
+                                                let statusLabel = payment.transaction_status;
+
+                                                if (payment.transaction_status === 'settlement' || payment.transaction_status === 'capture') {
+                                                    statusBadge = 'bg-emerald-50 text-emerald-700 border border-emerald-200';
+                                                    statusLabel = 'Sukses / Lunas';
+                                                } else if (payment.transaction_status === 'pending') {
+                                                    statusBadge = 'bg-amber-50 text-amber-700 border border-amber-200';
+                                                    statusLabel = 'Menunggu';
+                                                } else if (['failed', 'expire', 'deny', 'cancel'].includes(payment.transaction_status)) {
+                                                    statusBadge = 'bg-red-50 text-red-700 border border-red-200';
+                                                    statusLabel = 'Gagal / Batal';
+                                                } else if (payment.transaction_status === 'refunded' || payment.transaction_status === 'refund') {
+                                                    statusBadge = 'bg-gray-50 text-gray-600 border border-gray-200';
+                                                    statusLabel = 'Dikembalikan';
+                                                }
+
+                                                return (
+                                                    <tr key={payment.id} className="hover:bg-surface-variant/10 transition-colors">
+                                                        <td className="py-3 px-3 font-semibold">
+                                                            <span className={`px-2 py-0.5 rounded-md text-[10px] uppercase font-bold tracking-wider ${providerBadge}`}>
+                                                                {payment.provider}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3">
+                                                            <p className="font-mono text-xs font-semibold text-on-surface">{payment.order_id}</p>
+                                                            {payment.transaction_id && (
+                                                                <p className="text-[10px] text-on-surface-variant mt-0.5 font-mono">TX: {payment.transaction_id}</p>
+                                                            )}
+                                                        </td>
+                                                        <td className="py-3 px-3 text-xs text-on-surface font-medium capitalize">
+                                                            {payment.payment_type ? payment.payment_type.replace(/_/g, ' ') : '-'}
+                                                        </td>
+                                                        <td className="py-3 px-3 text-xs font-bold text-primary">
+                                                            {formatIDR(payment.gross_amount)}
+                                                        </td>
+                                                        <td className="py-3 px-3">
+                                                            <span className={`px-2 py-1 rounded-full text-[11px] font-semibold ${statusBadge}`}>
+                                                                {statusLabel}
+                                                            </span>
+                                                        </td>
+                                                        <td className="py-3 px-3 text-xs text-on-surface-variant">
+                                                            {new Date(payment.created_at).toLocaleString('id-ID', {
+                                                                day: 'numeric',
+                                                                month: 'short',
+                                                                year: 'numeric',
+                                                                hour: '2-digit',
+                                                                minute: '2-digit'
+                                                            })}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 border border-dashed border-outline-variant/50 rounded-xl bg-surface-variant/10">
+                                    <span className="material-symbols-outlined text-on-surface-variant/40 text-[32px] mb-1">payments</span>
+                                    <p className="text-xs text-on-surface-variant font-medium">Belum ada riwayat transaksi pembayaran.</p>
+                                    <p className="text-[10px] text-on-surface-variant/60 mt-0.5">Metode pembayaran baru akan tercatat setelah reservasi dibuat atau webhook merespons.</p>
+                                </div>
+                            )}
                         </div>
 
                     </div>
