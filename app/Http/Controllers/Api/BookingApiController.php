@@ -290,7 +290,11 @@ class BookingApiController extends Controller
                 $expiryMinutes = Setting::where('key', 'doku_expiry_minutes')->value('value') ?? 60;
                 
                 $dokuResponse = $dokuService->createCheckoutUrl($booking, $grandTotal, $expiryMinutes);
-                $paymentUrl = $dokuResponse['payment']['url'] ?? null;
+                
+                // DOKU API response structure sometimes wraps the data inside a 'response' object
+                $paymentUrl = $dokuResponse['payment']['url'] 
+                           ?? $dokuResponse['response']['payment']['url'] 
+                           ?? null;
 
                 if (!$paymentUrl) {
                     throw new \Exception('Gagal mendapatkan URL pembayaran dari DOKU.');
