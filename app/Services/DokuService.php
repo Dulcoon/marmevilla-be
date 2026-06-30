@@ -65,7 +65,7 @@ class DokuService
                 'payment_due_date' => (int) $expiryMinutes,
             ],
             'additional_info' => [
-                'override_notification_url' => url('/api/doku/webhook'),
+                'override_notification_url' => str_replace('http://', 'https://', url('/api/doku/webhook')),
             ]
         ];
 
