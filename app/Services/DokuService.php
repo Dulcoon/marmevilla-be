@@ -63,6 +63,7 @@ class DokuService
             ],
             'payment' => [
                 'payment_due_date' => (int) $expiryMinutes,
+                'payment_method_types' => ['QRIS'],
             ],
             'additional_info' => [
                 'override_notification_url' => str_replace('http://', 'https://', url('/api/doku/webhook')),
