@@ -102,7 +102,12 @@ class DokuService
         ])->withBody($jsonBody, 'application/json')->post($this->baseUrl . $targetPath);
 
         if ($response->successful()) {
-            return $response->json();
+            $responseData = $response->json();
+            Log::info('DOKU API Success Response', [
+                'invoice' => $booking->booking_code,
+                'response' => $responseData,
+            ]);
+            return $responseData;
         }
 
         Log::error('DOKU API Error Response', [
