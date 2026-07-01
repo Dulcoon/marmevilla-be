@@ -17,15 +17,12 @@ class Villa extends Model
         'features' => 'array',
         'features_en' => 'array',
         'weekend_enabled' => 'boolean',
+        'album_order' => 'array',
     ];
 
     public function images()
     {
-        return $this->hasMany(VillaImage::class)
-            ->orderBy('is_primary', 'desc')
-            ->orderByRaw("CASE WHEN album = 'Lainnya' THEN 1 ELSE 0 END ASC")
-            ->orderBy('album', 'asc')
-            ->orderBy('created_at', 'asc');
+        return $this->hasMany(VillaImage::class)->orderBy('is_primary', 'desc')->orderBy('created_at', 'asc');
     }
 
     public function customPrices()

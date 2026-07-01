@@ -34,11 +34,85 @@ export default function Form({ villa, all_facilities }) {
         new_images: [],
         image_albums: [],
         new_image_albums: [],
-        facilities_ids: villa.facilities ? villa.facilities.map(f => f.id) : []
+        facilities_ids: villa.facilities ? villa.facilities.map(f => f.id) : [],
+        album_order: villa.album_order || []
     });
 
     const [localImages, setLocalImages] = useState([]);
     const [customAlbums, setCustomAlbums] = useState([]);
+    const [collapsedAlbums, setCollapsedAlbums] = useState({});
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [tempAlbums, setTempAlbums] = useState(null);
+
+    const toggleAlbumCollapse = (albumName) => {
+        setCollapsedAlbums(prev => ({
+            ...prev,
+            [albumName]: !prev[albumName]
+        }));
+    };
+
+    const toggleAllAlbumsCollapse = (collapse) => {
+        const albumsToCollapse = tempAlbums || allAlbums;
+        const updated = {};
+        albumsToCollapse.forEach(album => {
+            updated[album] = collapse;
+        });
+        setCollapsedAlbums(updated);
+    };
+
+    const handleDragStart = (e, index) => {
+        const currentList = tempAlbums || allAlbums;
+        if (currentList[index] === 'Lainnya') {
+            e.preventDefault();
+            return;
+        }
+        setDraggedIndex(index);
+        setTempAlbums([...currentList]);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', index.toString());
+
+        // Use the entire album card as the drag ghost image
+        const cardElement = e.currentTarget.closest('.album-card-container');
+        if (cardElement) {
+            // Align the ghost image top-left (near the drag handle)
+            e.dataTransfer.setDragImage(cardElement, 24, 24);
+        }
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+        
+        const currentList = tempAlbums || allAlbums;
+        if (currentList[index] === 'Lainnya' || currentList[draggedIndex] === 'Lainnya') return;
+
+        // Immediately swap positions in local state for fluid visual shifting
+        const reordered = [...currentList];
+        const [draggedItem] = reordered.splice(draggedIndex, 1);
+        reordered.splice(index, 0, draggedItem);
+
+        setDraggedIndex(index);
+        setTempAlbums(reordered);
+    };
+
+    const handleDrop = (e) => {
+        e.preventDefault();
+        if (tempAlbums) {
+            const updatedOrder = tempAlbums.filter(album => album !== 'Lainnya');
+            setData('album_order', updatedOrder);
+        }
+        setDraggedIndex(null);
+        setTempAlbums(null);
+    };
+
+    const handleDragEnd = () => {
+        if (tempAlbums) {
+            const updatedOrder = tempAlbums.filter(album => album !== 'Lainnya');
+            setData('album_order', updatedOrder);
+        }
+        setDraggedIndex(null);
+        setTempAlbums(null);
+    };
 
     // Modal State for New Facility
     const [showFacilityModal, setShowFacilityModal] = useState(false);
@@ -84,10 +158,15 @@ export default function Form({ villa, all_facilities }) {
     const allAlbums = useMemo(() => {
         const savedAlbums = (villa?.images || []).map(img => img.album).filter(Boolean);
         const localAlbums = localImages.map(img => img.album).filter(Boolean);
-        const combined = [...new Set([...savedAlbums, ...localAlbums, ...customAlbums])];
-        const filtered = combined.filter(album => album !== 'Lainnya');
-        return [...filtered, 'Lainnya'];
-    }, [villa, localImages, customAlbums]);
+        const uniqueExisting = [...new Set([...savedAlbums, ...localAlbums, ...customAlbums])];
+        
+        const order = data.album_order || [];
+        const orderedExisting = order.filter(album => uniqueExisting.includes(album) && album !== 'Lainnya');
+        const unorderedExisting = uniqueExisting.filter(album => !orderedExisting.includes(album) && album !== 'Lainnya');
+        unorderedExisting.sort((a, b) => a.localeCompare(b, 'id'));
+        
+        return [...orderedExisting, ...unorderedExisting, 'Lainnya'];
+    }, [villa, localImages, customAlbums, data.album_order]);
 
     useEffect(() => {
         return () => {
@@ -453,128 +532,191 @@ export default function Form({ villa, all_facilities }) {
                             </label>
                             <InputError message={errors.weekend_enabled} />
                         </div>
-                    </div>
-
-                    {/* SECTION: Galeri Foto */}
+                    </div>                    {/* SECTION: Galeri Foto */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-4">
-                        <div className="flex justify-between items-center border-b border-outline-variant/50 pb-2 mb-4">
-                            <h3 className="text-headline-sm font-bold text-primary">Galeri Foto</h3>
-                            <button 
-                                type="button" 
-                                onClick={() => {
-                                    const name = prompt("Masukkan Nama Album Baru:");
-                                    if (name && name.trim() && !allAlbums.includes(name.trim())) {
-                                        setCustomAlbums(prev => [...prev, name.trim()]);
-                                    }
-                                }}
-                                className="text-sm bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1"
-                            >
-                                <span className="material-symbols-outlined text-[18px]">add</span> Album Baru
-                            </button>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-outline-variant/50 pb-3 mb-4 gap-3">
+                            <div>
+                                <h3 className="text-headline-sm font-bold text-primary">Galeri Foto</h3>
+                                <p className="text-xs text-on-surface-variant mt-0.5">Tarik dan lepas ikon drag di sebelah kiri album untuk mengurutkan tampilan.</p>
+                            </div>
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                <button
+                                    type="button"
+                                    onClick={() => toggleAllAlbumsCollapse(true)}
+                                    className="text-xs bg-surface-container-low text-on-surface-variant font-semibold px-3 py-2 rounded-lg hover:bg-surface-container-high transition-colors"
+                                >
+                                    Lipat Semua
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => toggleAllAlbumsCollapse(false)}
+                                    className="text-xs bg-surface-container-low text-on-surface-variant font-semibold px-3 py-2 rounded-lg hover:bg-surface-container-high transition-colors"
+                                >
+                                    Buka Semua
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => {
+                                        const name = prompt("Masukkan Nama Album Baru:");
+                                        if (name && name.trim() && !allAlbums.includes(name.trim())) {
+                                            setCustomAlbums(prev => [...prev, name.trim()]);
+                                        }
+                                    }}
+                                    className="text-xs bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 shrink-0 ml-auto sm:ml-0"
+                                >
+                                    <span className="material-symbols-outlined text-[18px]">add</span> Album Baru
+                                </button>
+                            </div>
                         </div>
 
-                        {allAlbums.map(albumName => {
-                            const savedImgs = (villa?.images || []).filter(img => (img.album || 'Lainnya') === albumName);
-                            const localImgs = localImages.map((img, idx) => ({ ...img, globalIndex: idx })).filter(img => (img.album || 'Lainnya') === albumName);
+                        <div className="flex flex-col gap-4">
+                            {(tempAlbums || allAlbums).map((albumName, idx) => {
+                                const savedImgs = (villa?.images || []).filter(img => (img.album || 'Lainnya') === albumName);
+                                const localImgs = localImages.map((img, idx) => ({ ...img, globalIndex: idx })).filter(img => (img.album || 'Lainnya') === albumName);
+                                const totalImgs = savedImgs.length + localImgs.length;
 
-                            if (savedImgs.length === 0 && localImgs.length === 0 && albumName !== 'Lainnya' && !customAlbums.includes(albumName)) {
-                                return null;
-                            }
+                                if (savedImgs.length === 0 && localImgs.length === 0 && albumName !== 'Lainnya' && !customAlbums.includes(albumName)) {
+                                    return null;
+                                }
 
-                            return (
-                                <div key={albumName} className="border border-outline-variant rounded-xl p-4 bg-surface-container-lowest">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="flex items-center gap-2 w-full max-w-sm">
-                                            <span className="material-symbols-outlined text-primary">photo_library</span>
-                                            <input
-                                                type="text"
-                                                defaultValue={albumName}
-                                                onBlur={(e) => renameAlbum(albumName, e.target.value)}
-                                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }}
-                                                className="font-bold text-lg text-primary border-none bg-transparent focus:ring-0 p-0 hover:bg-surface-variant/20 rounded px-2 w-full"
-                                                disabled={albumName === 'Lainnya'}
-                                                title={albumName === 'Lainnya' ? "Album default tidak dapat diubah namanya" : "Klik untuk mengubah nama album"}
-                                            />
+                                const isCollapsed = !!collapsedAlbums[albumName];
+
+                                return (
+                                    <div 
+                                        key={albumName} 
+                                        draggable={false}
+                                        onDragOver={(e) => handleDragOver(e, idx)}
+                                        onDrop={handleDrop}
+                                        style={{ transition: 'all 0.45s cubic-bezier(0.16, 1, 0.3, 1)' }}
+                                        className={`album-card-container border rounded-xl p-4 bg-surface-container-lowest ambient-shadow ${draggedIndex === idx ? 'opacity-25 border-dashed border-primary border-2 scale-[0.96] bg-primary/5 shadow-inner' : 'border-outline-variant hover:border-primary/40 hover:shadow-md'}`}
+                                    >
+                                        <div className="flex justify-between items-center select-none">
+                                            <div className="flex items-center gap-3 w-full">
+                                                {/* Drag Handle or Lock */}
+                                                {albumName !== 'Lainnya' ? (
+                                                    <span 
+                                                        draggable={true}
+                                                        onDragStart={(e) => handleDragStart(e, idx)}
+                                                        onDragEnd={handleDragEnd}
+                                                        className="material-symbols-outlined cursor-grab text-on-surface-variant hover:text-primary active:cursor-grabbing hover:bg-surface-variant/40 rounded p-1 shrink-0 select-none" 
+                                                        title="Tarik untuk mengurutkan album"
+                                                    >
+                                                        drag_indicator
+                                                    </span>
+                                                ) : (
+                                                    <span className="material-symbols-outlined text-outline-variant/60 shrink-0 select-none" title="Album default (selalu di akhir)">lock</span>
+                                                )}
+                                                
+                                                {/* Album Icon & Title Rename */}
+                                                <span className="material-symbols-outlined text-primary shrink-0">photo_library</span>
+                                                <input
+                                                    type="text"
+                                                    defaultValue={albumName}
+                                                    onBlur={(e) => renameAlbum(albumName, e.target.value)}
+                                                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } }}
+                                                    className="font-bold text-lg text-primary border-none bg-transparent focus:ring-0 p-0 hover:bg-surface-variant/20 rounded px-2 w-full max-w-xs focus:bg-white"
+                                                    disabled={albumName === 'Lainnya'}
+                                                    title={albumName === 'Lainnya' ? "Album default tidak dapat diubah namanya" : "Klik untuk mengubah nama album"}
+                                                />
+
+                                                <span className="text-xs font-semibold text-on-surface-variant bg-surface-container-low px-2.5 py-1 rounded-full shrink-0">
+                                                    {totalImgs} Foto
+                                                </span>
+                                            </div>
+
+                                            {/* Toggle Collapse Trigger */}
+                                            <button 
+                                                type="button"
+                                                onClick={() => toggleAlbumCollapse(albumName)}
+                                                className="p-1 hover:bg-surface-container-high rounded-full transition-colors flex items-center justify-center text-on-surface-variant shrink-0"
+                                                aria-label={isCollapsed ? "Buka album" : "Lipat album"}
+                                            >
+                                                <span className="material-symbols-outlined text-[24px]">
+                                                    {isCollapsed ? 'expand_more' : 'expand_less'}
+                                                </span>
+                                            </button>
                                         </div>
-                                    </div>
 
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                        {/* Render Saved Images */}
-                                        {savedImgs.map((img) => (
-                                            <div key={`saved-${img.id}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
-                                                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
-                                                    <img src={img.image_url} alt="Villa" className="w-full h-full object-cover" />
-                                                    {img.is_primary && (
-                                                        <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">UTAMA</div>
-                                                    )}
-                                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-end gap-2">
-                                                        {!img.is_primary ? (
-                                                            <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
-                                                                <span className="material-symbols-outlined text-[20px]">star</span>
-                                                            </button>
-                                                        ) : <div></div>}
-                                                        <button type="button" onClick={() => removeExistingImage(img.id)} className="text-error hover:text-error/80 flex items-center bg-black/40 rounded p-1">
-                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
-                                                        </button>
+                                        {!isCollapsed && (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4 animate-in fade-in slide-in-from-top-1 duration-200">
+                                                {/* Render Saved Images */}
+                                                {savedImgs.map((img) => (
+                                                    <div key={`saved-${img.id}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
+                                                        <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
+                                                            <img src={img.image_url} alt="Villa" className="w-full h-full object-cover" />
+                                                            {img.is_primary && (
+                                                                <div className="absolute top-2 left-2 bg-primary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">UTAMA</div>
+                                                            )}
+                                                            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-end gap-2">
+                                                                {!img.is_primary ? (
+                                                                    <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
+                                                                        <span className="material-symbols-outlined text-[20px]">star</span>
+                                                                    </button>
+                                                                ) : <div></div>}
+                                                                <button type="button" onClick={() => removeExistingImage(img.id)} className="text-error hover:text-error/80 flex items-center bg-black/40 rounded p-1">
+                                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
+                                                            <select
+                                                                value={albumName}
+                                                                onChange={(e) => updateExistingImageAlbum(img.id, e.target.value)}
+                                                                className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
+                                                            >
+                                                                {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
+                                                            </select>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
-                                                    <select
-                                                        value={albumName}
-                                                        onChange={(e) => updateExistingImageAlbum(img.id, e.target.value)}
-                                                        className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
-                                                    >
-                                                        {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
-                                                    </select>
+                                                ))}
+
+                                                {/* Render Local Images */}
+                                                {localImgs.map((img) => (
+                                                    <div key={`local-${img.globalIndex}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
+                                                        <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
+                                                            <img src={img.preview} alt="Preview" className="w-full h-full object-cover opacity-80" />
+                                                            <div className="absolute top-2 left-2 bg-tertiary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">BARU</div>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeLocalImage(img.globalIndex)}
+                                                                className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center"
+                                                            >
+                                                                <span className="material-symbols-outlined text-[16px]">close</span>
+                                                            </button>
+                                                        </div>
+                                                        <div className="flex flex-col gap-1">
+                                                            <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
+                                                            <select
+                                                                value={albumName}
+                                                                onChange={(e) => updateLocalImageAlbum(img.globalIndex, e.target.value)}
+                                                                className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
+                                                            >
+                                                                {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                ))}
+
+                                                {/* Upload Dropzone */}
+                                                <div className="relative border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low hover:border-primary transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[160px]">
+                                                    <input
+                                                        type="file"
+                                                        multiple
+                                                        accept="image/jpeg,image/png,image/webp,image/jpg"
+                                                        onChange={(e) => handleImageSelect(e, albumName)}
+                                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                        title={`Upload ke album ${albumName}`}
+                                                    />
+                                                    <span className="material-symbols-outlined text-3xl text-outline-variant group-hover:text-primary mb-2">add_photo_alternate</span>
+                                                    <p className="text-sm font-medium text-on-surface">Tambah Foto</p>
                                                 </div>
                                             </div>
-                                        ))}
-
-                                        {/* Render Local Images */}
-                                        {localImgs.map((img) => (
-                                            <div key={`local-${img.globalIndex}`} className="flex flex-col gap-2 bg-white p-2 rounded-xl border border-outline-variant group">
-                                                <div className="relative aspect-[4/3] rounded-lg overflow-hidden bg-black/5">
-                                                    <img src={img.preview} alt="Preview" className="w-full h-full object-cover opacity-80" />
-                                                    <div className="absolute top-2 left-2 bg-tertiary text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm">BARU</div>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeLocalImage(img.globalIndex)}
-                                                        className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center"
-                                                    >
-                                                        <span className="material-symbols-outlined text-[16px]">close</span>
-                                                    </button>
-                                                </div>
-                                                <div className="flex flex-col gap-1">
-                                                    <label className="text-[11px] text-on-surface-variant font-medium">Pindahkan ke:</label>
-                                                    <select
-                                                        value={albumName}
-                                                        onChange={(e) => updateLocalImageAlbum(img.globalIndex, e.target.value)}
-                                                        className="w-full px-2 py-1 text-xs bg-surface-container-low border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary"
-                                                    >
-                                                        {allAlbums.map(a => <option key={a} value={a}>{a}</option>)}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        ))}
-
-                                        {/* Upload Dropzone */}
-                                        <div className="relative border-2 border-dashed border-outline-variant rounded-xl p-4 text-center hover:bg-surface-container-low hover:border-primary transition-colors cursor-pointer flex flex-col items-center justify-center min-h-[160px]">
-                                            <input
-                                                type="file"
-                                                multiple
-                                                accept="image/jpeg,image/png,image/webp,image/jpg"
-                                                onChange={(e) => handleImageSelect(e, albumName)}
-                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                                title={`Upload ke album ${albumName}`}
-                                            />
-                                            <span className="material-symbols-outlined text-3xl text-outline-variant group-hover:text-primary mb-2">add_photo_alternate</span>
-                                            <p className="text-sm font-medium text-on-surface">Tambah Foto</p>
-                                        </div>
+                                        )}
                                     </div>
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                         
                         <InputError message={errors.images} className="mt-2" />
                         <InputError message={errors.new_images} className="mt-2" />

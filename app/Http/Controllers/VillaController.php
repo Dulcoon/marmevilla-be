@@ -61,6 +61,7 @@ class VillaController extends Controller
             'images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120', // Max 5MB per image
             'image_albums' => 'nullable|array',
             'image_albums.*' => 'nullable|string|max:255',
+            'album_order' => 'nullable|array',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -150,6 +151,7 @@ class VillaController extends Controller
             'new_images.*' => 'image|mimes:jpeg,png,jpg,webp|max:5120',
             'new_image_albums' => 'nullable|array',
             'new_image_albums.*' => 'nullable|string|max:255',
+            'album_order' => 'nullable|array',
         ]);
 
         // Only update slug if name changed
