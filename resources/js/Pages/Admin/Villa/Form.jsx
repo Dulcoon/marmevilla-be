@@ -82,10 +82,11 @@ export default function Form({ villa, all_facilities }) {
     };
 
     const allAlbums = useMemo(() => {
-        const defaults = ["Lainnya"];
         const savedAlbums = (villa?.images || []).map(img => img.album).filter(Boolean);
         const localAlbums = localImages.map(img => img.album).filter(Boolean);
-        return [...new Set([...defaults, ...savedAlbums, ...localAlbums, ...customAlbums])];
+        const combined = [...new Set([...savedAlbums, ...localAlbums, ...customAlbums])];
+        const filtered = combined.filter(album => album !== 'Lainnya');
+        return [...filtered, 'Lainnya'];
     }, [villa, localImages, customAlbums]);
 
     useEffect(() => {
