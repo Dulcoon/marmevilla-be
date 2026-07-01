@@ -62,6 +62,10 @@ class VillaController extends Controller
             'image_albums' => 'nullable|array',
             'image_albums.*' => 'nullable|string|max:255',
             'album_order' => 'nullable|array',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string',
+            'seo_title_en' => 'nullable|string|max:255',
+            'seo_description_en' => 'nullable|string',
         ]);
 
         $validated['slug'] = Str::slug($validated['name']);
@@ -152,6 +156,10 @@ class VillaController extends Controller
             'new_image_albums' => 'nullable|array',
             'new_image_albums.*' => 'nullable|string|max:255',
             'album_order' => 'nullable|array',
+            'seo_title' => 'nullable|string|max:255',
+            'seo_description' => 'nullable|string',
+            'seo_title_en' => 'nullable|string|max:255',
+            'seo_description_en' => 'nullable|string',
         ]);
 
         // Only update slug if name changed

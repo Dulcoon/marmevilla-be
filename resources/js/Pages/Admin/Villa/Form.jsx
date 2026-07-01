@@ -35,7 +35,11 @@ export default function Form({ villa, all_facilities }) {
         image_albums: [],
         new_image_albums: [],
         facilities_ids: villa.facilities ? villa.facilities.map(f => f.id) : [],
-        album_order: villa.album_order || []
+        album_order: villa.album_order || [],
+        seo_title: villa.seo_title || '',
+        seo_description: villa.seo_description || '',
+        seo_title_en: villa.seo_title_en || '',
+        seo_description_en: villa.seo_description_en || ''
     });
 
     const [localImages, setLocalImages] = useState([]);
@@ -720,6 +724,137 @@ export default function Form({ villa, all_facilities }) {
                         
                         <InputError message={errors.images} className="mt-2" />
                         <InputError message={errors.new_images} className="mt-2" />
+                    </div>
+
+                    {/* SECTION: Pengaturan SEO */}
+                    <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-6">
+                        <div className="border-b border-outline-variant/50 pb-3 flex items-center gap-2">
+                            <span className="material-symbols-outlined text-primary text-3xl">search</span>
+                            <div>
+                                <h3 className="text-headline-sm font-bold text-primary">Pengaturan SEO (Optimasi Google)</h3>
+                                <p className="text-xs text-on-surface-variant mt-0.5">Atur judul dan deskripsi pencarian agar judul halaman menarik dan relevan di hasil pencarian Google.</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* Bahasa Indonesia */}
+                            <div className="flex flex-col gap-4 border-r border-outline-variant/30 pr-0 md:pr-6">
+                                <h4 className="text-sm font-bold text-primary flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">language</span> Bahasa Indonesia
+                                </h4>
+
+                                {/* SEO Title (ID) */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <InputLabel htmlFor="seo_title" value="Meta Title (ID)" />
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            data.seo_title.length >= 40 && data.seo_title.length <= 60 
+                                                ? 'bg-success/10 text-success' 
+                                                : data.seo_title.length > 60 
+                                                    ? 'bg-error/10 text-error' 
+                                                    : 'bg-surface-container-high text-on-surface-variant'
+                                        }`}>
+                                            {data.seo_title.length} / 60 Karakter (Ideal: 50-60)
+                                        </span>
+                                    </div>
+                                    <TextInput
+                                        id="seo_title"
+                                        type="text"
+                                        name="seo_title"
+                                        value={data.seo_title}
+                                        className="w-full"
+                                        placeholder={villa.name ? `${villa.name} — Villa Mewah Tradisional Jogja` : ""}
+                                        onChange={(e) => setData('seo_title', e.target.value)}
+                                    />
+                                    <InputError message={errors.seo_title} />
+                                </div>
+
+                                {/* SEO Description (ID) */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <InputLabel htmlFor="seo_description" value="Meta Description (ID)" />
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            data.seo_description.length >= 120 && data.seo_description.length <= 160 
+                                                ? 'bg-success/10 text-success' 
+                                                : data.seo_description.length > 160 
+                                                    ? 'bg-error/10 text-error' 
+                                                    : 'bg-surface-container-high text-on-surface-variant'
+                                        }`}>
+                                            {data.seo_description.length} / 160 Karakter (Ideal: 120-160)
+                                        </span>
+                                    </div>
+                                    <textarea
+                                        id="seo_description"
+                                        name="seo_description"
+                                        rows={4}
+                                        value={data.seo_description}
+                                        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm p-3 transition-colors"
+                                        placeholder="Tulis deskripsi singkat penawaran villa yang memikat calon tamu di Google..."
+                                        onChange={(e) => setData('seo_description', e.target.value)}
+                                    />
+                                    <InputError message={errors.seo_description} />
+                                </div>
+                            </div>
+
+                            {/* English Translation */}
+                            <div className="flex flex-col gap-4">
+                                <h4 className="text-sm font-bold text-primary flex items-center gap-1">
+                                    <span className="material-symbols-outlined text-sm">language</span> English Translation
+                                </h4>
+
+                                {/* SEO Title (EN) */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <InputLabel htmlFor="seo_title_en" value="Meta Title (EN)" />
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            data.seo_title_en.length >= 40 && data.seo_title_en.length <= 60 
+                                                ? 'bg-success/10 text-success' 
+                                                : data.seo_title_en.length > 60 
+                                                    ? 'bg-error/10 text-error' 
+                                                    : 'bg-surface-container-high text-on-surface-variant'
+                                        }`}>
+                                            {data.seo_title_en.length} / 60 Karakter (Ideal: 50-60)
+                                        </span>
+                                    </div>
+                                    <TextInput
+                                        id="seo_title_en"
+                                        type="text"
+                                        name="seo_title_en"
+                                        value={data.seo_title_en}
+                                        className="w-full"
+                                        placeholder={villa.name ? `${villa.name} — Luxury Traditional Heritage Villa` : ""}
+                                        onChange={(e) => setData('seo_title_en', e.target.value)}
+                                    />
+                                    <InputError message={errors.seo_title_en} />
+                                </div>
+
+                                {/* SEO Description (EN) */}
+                                <div className="flex flex-col gap-2">
+                                    <div className="flex justify-between items-center">
+                                        <InputLabel htmlFor="seo_description_en" value="Meta Description (EN)" />
+                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                                            data.seo_description_en.length >= 120 && data.seo_description_en.length <= 160 
+                                                ? 'bg-success/10 text-success' 
+                                                : data.seo_description_en.length > 160 
+                                                    ? 'bg-error/10 text-error' 
+                                                    : 'bg-surface-container-high text-on-surface-variant'
+                                        }`}>
+                                            {data.seo_description_en.length} / 160 Karakter (Ideal: 120-160)
+                                        </span>
+                                    </div>
+                                    <textarea
+                                        id="seo_description_en"
+                                        name="seo_description_en"
+                                        rows={4}
+                                        value={data.seo_description_en}
+                                        className="w-full rounded-lg border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm p-3 transition-colors"
+                                        placeholder="Write an inviting english meta summary for search engines..."
+                                        onChange={(e) => setData('seo_description_en', e.target.value)}
+                                    />
+                                    <InputError message={errors.seo_description_en} />
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Actions */}
