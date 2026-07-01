@@ -59,7 +59,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                 className="fixed inset-0 z-10" 
                                 onClick={() => setNotifOpen(false)}
                             />
-                            <div className="absolute right-0 mt-2 w-80 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
+                            <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-80 mt-2 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
                                 <div className="px-4 py-3 flex justify-between items-center border-b border-outline-variant/50">
                                     <h3 className="font-bold text-primary text-sm">Notifikasi</h3>
                                     {unreadNotifications.length > 0 && (
@@ -132,7 +132,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                 className="fixed inset-0 z-10" 
                                 onClick={() => setMsgOpen(false)}
                             />
-                            <div className="absolute right-0 mt-2 w-80 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
+                            <div className="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-auto sm:w-80 mt-2 bg-white border border-outline-variant rounded-xl shadow-lg py-2 z-20 transition-all origin-top-right overflow-hidden">
                                 <div className="px-4 py-3 flex justify-between items-center border-b border-outline-variant/50">
                                     <h3 className="font-bold text-primary text-sm">Kotak Masuk</h3>
                                     {unreadMessagesCount > 0 && (

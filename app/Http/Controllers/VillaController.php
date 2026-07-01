@@ -71,7 +71,15 @@ class VillaController extends Controller
 
         $villaData = \Illuminate\Support\Arr::except($validated, ['images', 'image_albums', 'facilities_ids']);
         $villa = Villa::create($villaData);
-        \App\Jobs\TranslateVillaDataJob::dispatch($villa);
+        
+        $translationSuccess = false;
+        $translationError = null;
+        try {
+            \App\Jobs\TranslateVillaDataJob::dispatchSync($villa);
+            $translationSuccess = true;
+        } catch (\Exception $e) {
+            $translationError = $e->getMessage();
+        }
  
         // Handle image uploads
         if ($request->hasFile('images')) {
@@ -94,7 +102,11 @@ class VillaController extends Controller
             $villa->facilities()->sync($request->input('facilities_ids', []));
         }
 
-        return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil ditambahkan.');
+        if ($translationSuccess) {
+            return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil ditambahkan dan diterjemahkan otomatis ke bahasa Inggris.');
+        } else {
+            return redirect()->route('admin.villas.index')->with('warning', 'Villa berhasil ditambahkan, tetapi terjemahan otomatis gagal: ' . $translationError);
+        }
     }
 
     /**
@@ -151,7 +163,15 @@ class VillaController extends Controller
 
          $villaData = \Illuminate\Support\Arr::except($validated, ['new_images', 'new_image_albums', 'facilities_ids']);
         $villa->update($villaData);
-        \App\Jobs\TranslateVillaDataJob::dispatch($villa);
+        
+        $translationSuccess = false;
+        $translationError = null;
+        try {
+            \App\Jobs\TranslateVillaDataJob::dispatchSync($villa);
+            $translationSuccess = true;
+        } catch (\Exception $e) {
+            $translationError = $e->getMessage();
+        }
 
         // Handle new image uploads
         if ($request->hasFile('new_images')) {
@@ -176,7 +196,11 @@ class VillaController extends Controller
             $villa->facilities()->sync($request->input('facilities_ids', []));
         }
 
-        return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil diperbarui.');
+        if ($translationSuccess) {
+            return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil diperbarui dan diterjemahkan otomatis ke bahasa Inggris.');
+        } else {
+            return redirect()->route('admin.villas.index')->with('warning', 'Villa berhasil diperbarui, tetapi terjemahan otomatis gagal: ' . $translationError);
+        }
     }
 
     /**

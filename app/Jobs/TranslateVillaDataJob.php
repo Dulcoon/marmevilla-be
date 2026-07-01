@@ -82,6 +82,7 @@ class TranslateVillaDataJob implements ShouldQueue
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Gagal saat memproses terjemahan di Job: ' . $e->getMessage());
+            throw $e;
         }
     }
 }
