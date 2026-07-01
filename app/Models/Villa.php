@@ -21,7 +21,7 @@ class Villa extends Model
 
     public function images()
     {
-        return $this->hasMany(VillaImage::class)->orderBy('is_primary', 'desc')->orderBy('created_at', 'asc');
+        return $this->hasMany(VillaImage::class)->orderBy('is_primary', 'desc')->orderBy('album', 'asc')->orderBy('created_at', 'asc');
     }
 
     public function customPrices()
