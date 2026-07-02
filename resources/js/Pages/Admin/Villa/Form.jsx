@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { MATERIAL_ICONS } from '@/utils/material-icons';
