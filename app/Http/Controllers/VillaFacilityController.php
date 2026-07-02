@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\VillaFacility;
+use App\Models\VillaFacilityItem;
 use Illuminate\Http\Request;
 
 class VillaFacilityController extends Controller
@@ -16,11 +17,20 @@ class VillaFacilityController extends Controller
 
         $facility = VillaFacility::create([
             'name' => $request->name,
-            'icon' => $request->icon ?: 'check_circle', // default icon
+            'icon' => $request->icon ?: 'check_circle',
         ]);
 
         \App\Jobs\TranslateFacilityDataJob::dispatch($facility);
 
         return redirect()->back()->with('success', 'Fasilitas baru berhasil ditambahkan.');
+    }
+
+    public function destroy(VillaFacility $facility)
+    {
+        VillaFacilityItem::where('facility_id', $facility->id)->delete();
+
+        $facility->delete();
+
+        return redirect()->back()->with('success', 'Fasilitas berhasil dihapus.');
     }
 }

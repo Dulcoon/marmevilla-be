@@ -462,25 +462,42 @@ export default function Form({ villa, all_facilities }) {
                                         <span className="material-symbols-outlined text-[16px]">add</span> Tambah
                                     </button>
                                 </div>
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
+                                <div className="flex flex-col gap-1.5 mt-2">
                                     {all_facilities.map(facility => (
-                                        <label key={facility.id} className="flex items-center gap-3 cursor-pointer select-none p-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
-                                            <input
-                                                type="checkbox"
-                                                checked={data.facilities_ids.includes(facility.id)}
-                                                onChange={(e) => {
-                                                    const checked = e.target.checked;
-                                                    if (checked) {
-                                                        setData('facilities_ids', [...data.facilities_ids, facility.id]);
-                                                    } else {
-                                                        setData('facilities_ids', data.facilities_ids.filter(id => id !== facility.id));
+                                        <div key={facility.id} className="group flex items-center gap-3 p-2.5 border border-outline-variant rounded-lg hover:border-primary/30 hover:bg-surface-container-low transition-all">
+                                            <label className="flex items-center gap-3 flex-1 cursor-pointer select-none min-w-0">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={data.facilities_ids.includes(facility.id)}
+                                                    onChange={(e) => {
+                                                        const checked = e.target.checked;
+                                                        if (checked) {
+                                                            setData('facilities_ids', [...data.facilities_ids, facility.id]);
+                                                        } else {
+                                                            setData('facilities_ids', data.facilities_ids.filter(id => id !== facility.id));
+                                                        }
+                                                    }}
+                                                    className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4 shrink-0"
+                                                />
+                                                <span className="material-symbols-outlined text-[20px] text-primary shrink-0">{facility.icon || 'check_circle'}</span>
+                                                <span className="text-sm text-on-surface truncate">{facility.name}</span>
+                                            </label>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (confirm(`Hapus fasilitas "${facility.name}"? Fasilitas ini akan dihapus dari semua villa.`)) {
+                                                        router.delete(route('admin.facilities.destroy', facility.id), {
+                                                            preserveScroll: true,
+                                                        });
                                                     }
                                                 }}
-                                                className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4 shrink-0"
-                                            />
-                                            <span className="material-symbols-outlined text-[20px] text-primary shrink-0">{facility.icon || 'check_circle'}</span>
-                                            <span className="text-sm text-on-surface line-clamp-1">{facility.name}</span>
-                                        </label>
+                                                className="p-2 text-on-surface-variant/40 hover:text-error hover:bg-error/10 rounded-lg transition-all"
+                                                title={`Hapus ${facility.name}`}
+                                                aria-label={`Hapus fasilitas ${facility.name}`}
+                                            >
+                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
                                     ))}
                                 </div>
                                 <InputError message={errors.facilities_ids} />

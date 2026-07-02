@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
         
         // Villa Facilities
         Route::post('facilities', [\App\Http\Controllers\VillaFacilityController::class, 'store'])->name('facilities.store');
+        Route::delete('facilities/{facility}', [\App\Http\Controllers\VillaFacilityController::class, 'destroy'])->name('facilities.destroy');
     
         // Pricing Rules Routes
         Route::get('pricing', [\App\Http\Controllers\PricingRuleController::class, 'index'])->name('pricing.index');
