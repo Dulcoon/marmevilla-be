@@ -756,7 +756,7 @@ export default function Form({ villa, all_facilities }) {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Bahasa Indonesia */}
-                            <div className="flex flex-col gap-4 border-r border-outline-variant/30 pr-0 md:pr-6">
+                            <div className="flex flex-col gap-6 border-r border-outline-variant/30 pr-0 md:pr-6">
                                 <h4 className="text-sm font-bold text-primary flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">language</span> Bahasa Indonesia
                                 </h4>
@@ -780,7 +780,7 @@ export default function Form({ villa, all_facilities }) {
                                         type="text"
                                         name="seo_title"
                                         value={data.seo_title}
-                                        className="w-full"
+                                        className="w-full p-3 text-base"
                                         placeholder={villa.name ? `${villa.name} — Villa Mewah Tradisional Jogja` : ""}
                                         onChange={(e) => setData('seo_title', e.target.value)}
                                     />
@@ -806,7 +806,7 @@ export default function Form({ villa, all_facilities }) {
                                         name="seo_description"
                                         rows={4}
                                         value={data.seo_description}
-                                        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm p-3 transition-colors"
+                                        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary p-3 text-base transition-colors"
                                         placeholder="Tulis deskripsi singkat penawaran villa yang memikat calon tamu di Google..."
                                         onChange={(e) => setData('seo_description', e.target.value)}
                                     />
@@ -815,7 +815,7 @@ export default function Form({ villa, all_facilities }) {
                             </div>
 
                             {/* English Translation */}
-                            <div className="flex flex-col gap-4">
+                            <div className="flex flex-col gap-6">
                                 <h4 className="text-sm font-bold text-primary flex items-center gap-1">
                                     <span className="material-symbols-outlined text-sm">language</span> English Translation
                                 </h4>
@@ -839,7 +839,7 @@ export default function Form({ villa, all_facilities }) {
                                         type="text"
                                         name="seo_title_en"
                                         value={data.seo_title_en}
-                                        className="w-full"
+                                        className="w-full p-3 text-base"
                                         placeholder={villa.name ? `${villa.name} — Luxury Traditional Heritage Villa` : ""}
                                         onChange={(e) => setData('seo_title_en', e.target.value)}
                                     />
@@ -865,7 +865,7 @@ export default function Form({ villa, all_facilities }) {
                                         name="seo_description_en"
                                         rows={4}
                                         value={data.seo_description_en}
-                                        className="w-full rounded-lg border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary text-sm p-3 transition-colors"
+                                        className="w-full rounded-lg border-outline-variant bg-surface-container-lowest text-on-surface focus:border-primary focus:ring-1 focus:ring-primary p-3 text-base transition-colors"
                                         placeholder="Write an inviting english meta summary for search engines..."
                                         onChange={(e) => setData('seo_description_en', e.target.value)}
                                     />
