@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
+use App\Models\Setting;
 use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,7 +26,7 @@ class MidtransWebhookController extends Controller
         // Verify signature key
         $validSignatureKey = hash(
             "sha512",
-            $notification->order_id . $notification->status_code . $notification->gross_amount . config('midtrans.server_key')
+            $notification->order_id . $notification->status_code . $notification->gross_amount . (Setting::where('key', 'midtrans_server_key')->value('value') ?? config('midtrans.server_key'))
         );
 
         if ($notification->signature_key !== $validSignatureKey) {
