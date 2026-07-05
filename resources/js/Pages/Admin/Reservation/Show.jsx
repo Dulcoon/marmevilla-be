@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, router, usePage, useForm } from '@inertiajs/react';
 import { useState, useEffect } from 'react';
 import Modal from '@/Components/Modal';
@@ -122,7 +123,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         href={route('admin.reservations.index')}
                         className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary border border-transparent hover:border-outline-variant/30 transition-colors shrink-0"
                     >
-                        <span className="material-symbols-outlined text-[24px]">arrow_back</span>
+                        <IconRenderer name="arrow_back" className="text-[24px]" />
                     </Link>
                     <div>
                         <h2 className="text-2xl font-bold text-primary font-mono tracking-wide">{booking.booking_code}</h2>
@@ -135,13 +136,13 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                 {/* Flash messages */}
                 {flash?.success && (
                     <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">
-                        <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                        <IconRenderer name="check_circle" className="text-[20px]" />
                         <span className="text-sm font-medium">{flash.success}</span>
                     </div>
                 )}
                 {flash?.error && (
                     <div className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
-                        <span className="material-symbols-outlined text-[20px]">error</span>
+                        <IconRenderer name="error" className="text-[20px]" />
                         <span className="text-sm font-medium">{flash.error}</span>
                     </div>
                 )}
@@ -154,11 +155,11 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Status Badges */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow flex flex-wrap gap-3">
                             <div className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-sm ${bs.color}`}>
-                                <span className="material-symbols-outlined text-[18px]">{bs.icon}</span>
+                                <IconRenderer name={bs.icon} className="text-[18px]" />
                                 {bs.label}
                             </div>
                             <div className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-sm ${ps.color}`}>
-                                <span className="material-symbols-outlined text-[18px]">{ps.icon}</span>
+                                <IconRenderer name={ps.icon} className="text-[18px]" />
                                 {ps.label}
                             </div>
                         </div>
@@ -169,7 +170,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                             
                             <div className="flex items-center justify-between mb-5">
                                 <h3 className="font-bold text-primary text-sm uppercase tracking-wider flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px]">villa</span>
+                                    <IconRenderer name="villa" className="text-[18px]" />
                                     Informasi Villa
                                 </h3>
                                 <button
@@ -177,7 +178,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                                     className="p-2 rounded-full hover:bg-gold/10 text-gold transition-colors"
                                     title="Ubah Tanggal Reservasi"
                                 >
-                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                    <IconRenderer name="edit" className="text-[20px]" />
                                 </button>
                             </div>
 
@@ -217,7 +218,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Guest Info */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
                             <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-1 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">person</span>
+                                <IconRenderer name="person" className="text-[18px]" />
                                 Data Tamu
                             </h3>
                             <InfoRow label="Nama Lengkap" value={booking.guest_name} />
@@ -232,7 +233,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Payment Breakdown */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
                             <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-1 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">receipt</span>
+                                <IconRenderer name="receipt" className="text-[18px]" />
                                 Rincian Pembayaran
                             </h3>
                             <InfoRow label="Harga Villa" value={formatIDR(booking.base_price_total)} />
@@ -254,7 +255,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Riwayat Pembayaran (Payment attempts logs) */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
                             <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">history_edu</span>
+                                <IconRenderer name="history_edu" className="text-[18px]" />
                                 Riwayat Transaksi (Payment Gateway)
                             </h3>
 
@@ -335,7 +336,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                                 </div>
                             ) : (
                                 <div className="text-center py-6 border border-dashed border-outline-variant/50 rounded-xl bg-surface-variant/10">
-                                    <span className="material-symbols-outlined text-on-surface-variant/40 text-[32px] mb-1">payments</span>
+                                    <IconRenderer name="payments" className="text-on-surface-variant/40 text-[32px] mb-1" />
                                     <p className="text-xs text-on-surface-variant font-medium">Belum ada riwayat transaksi pembayaran.</p>
                                     <p className="text-[10px] text-on-surface-variant/60 mt-0.5">Metode pembayaran baru akan tercatat setelah reservasi dibuat atau webhook merespons.</p>
                                 </div>
@@ -350,7 +351,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Update Status Form */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
                             <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                                <IconRenderer name="edit_note" className="text-[18px]" />
                                 Ubah Status
                             </h3>
                             <form onSubmit={updateStatus} className="space-y-4">
@@ -395,7 +396,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {!['cancelled', 'checked_out'].includes(booking.booking_status) && (
                             <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow border-l-4 border-error">
                                 <h3 className="font-bold text-error text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px]">warning</span>
+                                    <IconRenderer name="warning" className="text-[18px]" />
                                     Tindakan Berbahaya
                                 </h3>
                                 <p className="text-xs text-on-surface-variant mb-4">Membatalkan reservasi akan membebaskan slot tanggal tersebut. Tindakan ini tidak dapat diurungkan.</p>
@@ -412,7 +413,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                         {/* Timeline */}
                         <div className="bg-white rounded-xl p-5 ghost-border ambient-shadow">
                             <h3 className="font-bold text-primary text-sm uppercase tracking-wider mb-4 flex items-center gap-2">
-                                <span className="material-symbols-outlined text-[18px]">timeline</span>
+                                <IconRenderer name="timeline" className="text-[18px]" />
                                 Info Sistem
                             </h3>
                             <div className="space-y-3 text-xs text-on-surface-variant">

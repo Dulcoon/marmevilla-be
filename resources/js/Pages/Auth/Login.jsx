@@ -1,4 +1,5 @@
 import Checkbox from '@/Components/Checkbox';
+import { IconRenderer } from '@/utils/icon-mapper';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import GuestLayout from '@/Layouts/GuestLayout';
@@ -47,7 +48,7 @@ export default function Login({ status, canResetPassword }) {
                     }}
                     className="mb-4 w-full bg-surface-container-high text-on-surface-variant border border-outline-variant py-2 px-4 rounded-lg font-medium text-sm hover:bg-surface-container-highest transition-colors flex items-center justify-center gap-2"
                 >
-                    <span className="material-symbols-outlined text-[18px]">developer_mode</span>
+                    <IconRenderer name="developer_mode" className="text-[18px]" />
                     Auto-fill Admin (Dev Only)
                 </button>
             )}

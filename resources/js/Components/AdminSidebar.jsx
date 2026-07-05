@@ -1,4 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
+import { IconRenderer } from '@/utils/icon-mapper';
 
 export default function AdminSidebar({ isOpen, onClose }) {
     const { url } = usePage();
@@ -45,7 +46,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                         onClick={onClose} 
                         className="lg:hidden p-1 text-on-primary hover:bg-white/10 rounded-full transition-colors"
                     >
-                        <span className="material-symbols-outlined">close</span>
+                        <IconRenderer name="close" />
                     </button>
                 </div>
 
@@ -61,12 +62,9 @@ export default function AdminSidebar({ isOpen, onClose }) {
                                     : 'hover:text-on-primary hover:bg-primary-container/10'
                             }`}
                         >
-                            <span 
-                                className="material-symbols-outlined text-[24px] sm:text-[20px]" 
+                            <IconRenderer name={item.icon} className="text-[24px] sm:text-[20px]" 
                                 style={{ fontVariationSettings: item.active ? "'FILL' 1" : undefined }}
-                            >
-                                {item.icon}
-                            </span>
+                             />
                             <span className={`font-label-md text-base sm:text-label-md ${item.active ? 'text-[#D4B47D] font-semibold' : ''}`}>
                                 {item.name}
                             </span>
@@ -86,7 +84,7 @@ export default function AdminSidebar({ isOpen, onClose }) {
                                     : 'hover:text-on-primary hover:bg-primary-container/10'
                             }`}
                         >
-                            <span className="material-symbols-outlined text-[24px] sm:text-[20px]">{item.icon}</span>
+                            <IconRenderer name={item.icon} className="text-[24px] sm:text-[20px]" />
                             <span className="font-label-md text-base sm:text-label-md">{item.name}</span>
                         </Link>
                     ))}

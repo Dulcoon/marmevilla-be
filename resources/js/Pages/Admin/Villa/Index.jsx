@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 
@@ -35,7 +36,7 @@ function VillaMenu({ villa, onDeleteClick }) {
                 className="text-on-surface-variant hover:text-primary transition-colors p-1 -mr-1 -mt-1 rounded hover:bg-surface-container-lowest focus:outline-none"
                 title="Opsi"
             >
-                <span className="material-symbols-outlined">more_vert</span>
+                <IconRenderer name="more_vert" />
             </button>
 
             {open && (
@@ -45,7 +46,7 @@ function VillaMenu({ villa, onDeleteClick }) {
                         className="flex items-center gap-2.5 px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
                         onClick={() => setOpen(false)}
                     >
-                        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">edit</span>
+                        <IconRenderer name="edit" className="text-[18px] text-on-surface-variant" />
                         Edit Villa
                     </Link>
                     <button
@@ -63,7 +64,7 @@ function VillaMenu({ villa, onDeleteClick }) {
                             });
                         }}
                     >
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                        <IconRenderer name="delete" className="text-[18px]" />
                         Hapus Villa
                     </button>
                 </div>
@@ -107,7 +108,7 @@ function DeleteConfirmModal({ villa, onConfirm, onCancel }) {
             >
                 {/* Warning Icon */}
                 <div className="w-14 h-14 rounded-full bg-error/10 flex items-center justify-center mb-4 mx-auto">
-                    <span className="material-symbols-outlined text-error text-[32px]">delete_forever</span>
+                    <IconRenderer name="delete_forever" className="text-error text-[32px]" />
                 </div>
 
                 <h2 className="text-xl font-bold text-center text-primary mb-2">
@@ -192,7 +193,7 @@ export default function Index({ villas }) {
                         href={route('admin.villas.create')}
                         className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
                     >
-                        <span className="material-symbols-outlined text-[20px] sm:text-[18px]">add</span>
+                        <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
                         Tambah Villa
                     </Link>
                 </div>
@@ -212,7 +213,7 @@ export default function Index({ villas }) {
                                         <img src={villa.images[0].image_url} alt={villa.name} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center">
-                                            <span className="material-symbols-outlined text-on-surface-variant text-4xl">image</span>
+                                            <IconRenderer name="image" className="text-on-surface-variant text-4xl" />
                                         </div>
                                     )}
                                     
@@ -233,7 +234,7 @@ export default function Index({ villas }) {
                                             </span>
                                         ) : (
                                             <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-amber-50/90 backdrop-blur-sm text-amber-600 flex items-center gap-1.5 shadow-sm border border-amber-100">
-                                                <span className="material-symbols-outlined text-[14px]">pending</span> Menunggu EN
+                                                <IconRenderer name="pending" className="text-[14px]" /> Menunggu EN
                                             </span>
                                         )}
                                     </div>
@@ -252,11 +253,11 @@ export default function Index({ villas }) {
                                     {/* Meta info */}
                                     <div className="flex items-center gap-4 text-sm text-on-surface-variant font-medium mb-6">
                                         <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[18px]">group</span>
+                                            <IconRenderer name="group" className="text-[18px]" />
                                             {villa.capacity} Tamu
                                         </div>
                                         <div className="flex items-center gap-1.5">
-                                            <span className="material-symbols-outlined text-[18px]">bed</span>
+                                            <IconRenderer name="bed" className="text-[18px]" />
                                             {villa.bed_count || 0} Kamar
                                         </div>
                                     </div>

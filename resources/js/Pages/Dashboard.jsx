@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, router } from '@inertiajs/react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
@@ -76,7 +77,7 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                         <p className="text-on-surface-variant text-base sm:text-body-md">Selamat datang kembali. Berikut aktivitas di Marme Villa hari ini.</p>
                     </div>
                     {/* <button className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]">
-                        <span className="material-symbols-outlined text-[20px] sm:text-[18px]">add</span>
+                        <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
                         Booking Baru
                     </button> */}
                 </div>
@@ -87,11 +88,11 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                         <div key={idx} className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-3 sm:gap-4">
                             <div className="flex justify-between items-start">
                                 <div className="p-3 bg-[#fdfaf5] rounded-lg border border-[#f0e8d9]">
-                                    <span className="material-symbols-outlined text-primary text-2xl">{stat.icon}</span>
+                                    <IconRenderer name={stat.icon} className="text-primary text-2xl" />
                                 </div>
                                 {stat.trendType === 'up' ? (
                                     <span className="bg-[#e8f5e9] text-[#2e7d32] text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-[16px] sm:text-[14px]">trending_up</span> {stat.trend}
+                                        <IconRenderer name="trending_up" className="text-[16px] sm:text-[14px]" /> {stat.trend}
                                     </span>
                                 ) : (
                                     <span className="bg-surface-variant text-on-surface-variant text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-1">
@@ -167,7 +168,7 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                                 {highlights.map((highlight, idx) => (
                                     <div key={idx} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/10">
                                         <div className="flex items-center gap-3">
-                                            <span className="material-symbols-outlined text-primary">{highlight.icon}</span>
+                                            <IconRenderer name={highlight.icon} className="text-primary" />
                                             <div>
                                                 <p className="font-label-md text-sm text-white/70">{highlight.title}</p>
                                                 <p className="font-bold text-base">{highlight.subtitle}</p>
@@ -223,7 +224,7 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                                             </td>
                                             <td className="py-4 px-4 sm:px-6 text-right">
                                                 <Link href={route('admin.reservations.show', booking.id)} className="text-on-surface-variant hover:text-primary transition-colors p-2 rounded-full hover:bg-surface-container-low inline-block">
-                                                    <span className="material-symbols-outlined text-base sm:text-sm">visibility</span>
+                                                    <IconRenderer name="visibility" className="text-base sm:text-sm" />
                                                 </Link>
                                             </td>
                                         </tr>
@@ -257,11 +258,11 @@ export default function Dashboard({ stats: beStats, todayHighlights, recentBooki
                                     {/* Detail Box */}
                                     <div className="flex justify-between items-center text-sm text-on-surface-variant bg-[#F9F7F2] rounded-xl p-3.5">
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[18px]">villa</span>
+                                            <IconRenderer name="villa" className="text-[18px]" />
                                             <span className="font-medium truncate max-w-[120px]">{booking.villa?.name || '-'}</span>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                                            <IconRenderer name="calendar_today" className="text-[18px]" />
                                             <span className="font-medium whitespace-nowrap">{formatDateRange(booking.check_in, booking.check_out)}</span>
                                         </div>
                                     </div>

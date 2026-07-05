@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Link, usePage } from '@inertiajs/react';
 
 export default function AdminHeader({ onMenuToggle }) {
@@ -22,11 +23,11 @@ export default function AdminHeader({ onMenuToggle }) {
                     className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors lg:hidden active:opacity-80"
                     aria-label="Toggle Navigation Sidebar"
                 >
-                    <span className="material-symbols-outlined">menu</span>
+                    <IconRenderer name="menu" className="text-[22px]" />
                 </button>
 
                 <div className="relative hidden sm:block">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+                    <IconRenderer name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                     <input 
                         className="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full text-sm focus:outline-none focus:border-[#D4B47D] focus:ring-1 focus:ring-[#D4B47D] transition-colors w-64" 
                         placeholder="Cari reservasi, tamu..." 
@@ -47,7 +48,7 @@ export default function AdminHeader({ onMenuToggle }) {
                         }}
                         className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80"
                     >
-                        <span className="material-symbols-outlined">notifications</span>
+                        <IconRenderer name="notifications" className="text-[22px]" />
                         {unreadNotifications.length > 0 && (
                             <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-error rounded-full"></span>
                         )}
@@ -86,9 +87,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                                 className="w-full flex items-start gap-3 p-4 hover:bg-surface-container-lowest transition-colors text-left border-b border-outline-variant/30 last:border-0"
                                                 onClick={() => setNotifOpen(false)}
                                             >
-                                                <span className={`material-symbols-outlined mt-0.5 ${notif.data.color || 'text-primary'}`}>
-                                                    {notif.data.icon || 'notifications'}
-                                                </span>
+                                                <IconRenderer name={notif.data.icon || 'notifications'} className={` mt-0.5 ${notif.data.color || 'text-primary'}`} />
                                                 <div className="flex-1">
                                                     <p className="text-sm text-on-surface font-medium leading-snug">
                                                         {notif.data.message}
@@ -120,7 +119,7 @@ export default function AdminHeader({ onMenuToggle }) {
                         }}
                         className="p-3 sm:p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative cursor-pointer active:opacity-80"
                     >
-                        <span className="material-symbols-outlined">mail</span>
+                        <IconRenderer name="mail" className="text-[22px]" />
                         {unreadMessagesCount > 0 && (
                             <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 w-2 h-2 bg-error rounded-full"></span>
                         )}
@@ -157,9 +156,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                                 className="w-full flex items-start gap-3 p-4 hover:bg-surface-container-lowest transition-colors text-left border-b border-outline-variant/30 last:border-0"
                                                 onClick={() => setMsgOpen(false)}
                                             >
-                                                <span className="material-symbols-outlined mt-0.5 text-[#D4B47D]">
-                                                    person
-                                                </span>
+                                                <IconRenderer name="person" className="mt-0.5 text-[#D4B47D]" />
                                                 <div className="flex-1">
                                                     <p className="text-sm text-on-surface font-medium leading-snug truncate">
                                                         {msg.name}
@@ -225,7 +222,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                     className="flex items-center gap-3 px-4 py-3 sm:py-2.5 text-base sm:text-sm text-on-surface hover:bg-surface-container-low transition-colors"
                                     onClick={() => setProfileOpen(false)}
                                 >
-                                    <span className="material-symbols-outlined text-lg sm:text-sm">person</span>
+                                    <IconRenderer name="person" className="text-lg sm:text-sm" />
                                     <span>Profil</span>
                                 </Link>
                                 <hr className="border-outline-variant/50 my-1" />
@@ -236,7 +233,7 @@ export default function AdminHeader({ onMenuToggle }) {
                                     className="w-full flex items-center gap-3 px-4 py-3 sm:py-2.5 text-base sm:text-sm text-error hover:bg-error-container/20 transition-colors text-left"
                                     onClick={() => setProfileOpen(false)}
                                 >
-                                    <span className="material-symbols-outlined text-lg sm:text-sm text-error">logout</span>
+                                    <IconRenderer name="logout" className="text-lg sm:text-sm text-error" />
                                     <span>Keluar</span>
                                 </Link>
                             </div>

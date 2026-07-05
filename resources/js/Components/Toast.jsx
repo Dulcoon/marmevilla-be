@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { usePage } from '@inertiajs/react';
 
 export default function Toast() {
@@ -61,13 +62,13 @@ export default function Toast() {
                 className={`flex items-center gap-3 px-5 py-3.5 rounded-xl border shadow-lg backdrop-blur-md transition-all duration-300 animate-slide-down ${styles[toast.type]} pointer-events-auto max-w-sm w-full sm:w-auto`}
                 role="alert"
             >
-                <span className="material-symbols-outlined shrink-0">{icons[toast.type]}</span>
+                <IconRenderer name={icons[toast.type]} className="shrink-0" />
                 <p className="text-sm font-semibold flex-1 leading-snug">{toast.message}</p>
                 <button 
                     onClick={() => setVisible(false)}
                     className="shrink-0 rounded-full p-1 hover:bg-black/10 transition-colors -mr-1"
                 >
-                    <span className="material-symbols-outlined text-[20px]">close</span>
+                    <IconRenderer name="close" className="text-[20px]" />
                 </button>
             </div>
 

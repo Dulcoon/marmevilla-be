@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { IconRenderer } from '@/utils/icon-mapper';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { Calendar } from "@/components/ui/calendar";
@@ -98,7 +99,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                 ))}
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
-                                <span className="material-symbols-outlined text-[20px]">expand_more</span>
+                                <IconRenderer name="expand_more" className="text-[20px]" />
                             </div>
                         </div>
                     </div>
@@ -132,7 +133,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <a href={route('admin.villas.edit', selectedVilla.id)} className="text-primary bg-white border border-primary/30 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-primary/5 transition-colors inline-flex items-center gap-1">
-                                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                                        <IconRenderer name="edit" className="text-[16px]" />
                                         Edit
                                     </a>
                                     <label className="relative hidden md:inline-flex items-center cursor-pointer shrink-0">
@@ -154,7 +155,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                 <div className="bg-surface-container-lowest rounded-xl border border-[#E6E2D3] p-6 shadow-[0px_4px_20px_rgba(64,46,42,0.08)] flex flex-col h-full">
                                 <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/30 pb-4">
                                     <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                                        <span className="material-symbols-outlined">edit_calendar</span>
+                                        <IconRenderer name="edit_calendar" />
                                     </div>
                                     <div>
                                         <h3 className="font-headline-md text-2xl font-semibold text-primary">Harga Rentang Khusus</h3>
@@ -180,7 +181,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <button type="button" className="w-full flex items-center gap-3 p-3 bg-[#F9F7F2] border border-outline-variant/30 rounded-xl outline-none focus:border-[#D4B47D] hover:bg-black/5 text-left transition-colors">
-                                                    <span className="material-symbols-outlined text-[20px] text-on-surface-variant">calendar_month</span>
+                                                    <IconRenderer name="calendar_month" className="text-[20px] text-on-surface-variant" />
                                                     <span className="flex-1 font-body-md text-on-surface">
                                                         {dateRange?.from ? (
                                                             dateRange.to ? (
@@ -292,13 +293,13 @@ export default function Index({ villas, selectedVilla, auth }) {
                                                         className="text-outline-variant hover:text-error transition-colors"
                                                         title="Hapus Aturan"
                                                     >
-                                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                        <IconRenderer name="delete" className="text-[18px]" />
                                                     </button>
                                                 </div>
                                             </div>
                                             {/* Middle row */}
                                             <div className="flex items-center gap-2 text-on-surface-variant text-sm">
-                                                <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                                                <IconRenderer name="calendar_month" className="text-[16px]" />
                                                 <span>
                                                     {new Date(rule.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})} &ndash; {new Date(rule.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})}
                                                 </span>
@@ -318,13 +319,13 @@ export default function Index({ villas, selectedVilla, auth }) {
                                             <div className="flex items-center gap-3">
                                                 <span className="px-2 py-0.5 bg-outline-variant/30 text-on-surface-variant text-[10px] font-bold rounded-md tracking-wider uppercase">Default</span>
                                                 <a href={route('admin.villas.edit', selectedVilla.id)} className="text-outline-variant hover:text-primary transition-colors inline-flex">
-                                                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                                                    <IconRenderer name="edit" className="text-[18px]" />
                                                 </a>
                                             </div>
                                         </div>
                                         {/* Middle row */}
                                         <div className="flex items-center gap-2 text-outline text-sm">
-                                            <span className="material-symbols-outlined text-[16px]">calendar_month</span>
+                                            <IconRenderer name="calendar_month" className="text-[16px]" />
                                             <span>All other dates</span>
                                         </div>
                                         {/* Bottom row */}

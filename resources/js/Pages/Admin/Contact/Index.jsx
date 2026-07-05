@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -40,7 +41,7 @@ export default function Index({ contacts }) {
                 {/* Messages List Container */}
                 {contacts.data.length === 0 ? (
                     <div className="bg-white rounded-xl ghost-border ambient-shadow p-8 text-center text-on-surface-variant text-sm">
-                        <span className="material-symbols-outlined text-4xl mb-3 block opacity-50">inbox</span>
+                        <IconRenderer name="inbox" className="text-4xl mb-3 block opacity-50" />
                         Belum ada pesan masuk.
                     </div>
                 ) : (
@@ -69,17 +70,17 @@ export default function Index({ contacts }) {
                                     {/* Meta info */}
                                     <div className="flex flex-col gap-1.5 text-sm text-on-surface-variant font-medium mb-4">
                                         <div className="flex items-center gap-1.5 truncate">
-                                            <span className="material-symbols-outlined text-[18px]">mail</span>
+                                            <IconRenderer name="mail" className="text-[18px]" />
                                             {contact.email}
                                         </div>
                                         {contact.phone && (
                                             <div className="flex items-center gap-1.5 truncate">
-                                                <span className="material-symbols-outlined text-[18px]">call</span>
+                                                <IconRenderer name="call" className="text-[18px]" />
                                                 {contact.phone}
                                             </div>
                                         )}
                                         <div className="flex items-center gap-1.5 text-xs mt-1">
-                                            <span className="material-symbols-outlined text-[16px]">schedule</span>
+                                            <IconRenderer name="schedule" className="text-[16px]" />
                                             {formatTime(contact.created_at)}
                                         </div>
                                     </div>
@@ -94,7 +95,7 @@ export default function Index({ contacts }) {
                                             onClick={() => handleViewMessage(contact)}
                                             className="flex-1 px-4 py-2 text-sm font-semibold bg-surface-container-low text-primary hover:bg-primary hover:text-white rounded-lg transition-colors flex items-center justify-center gap-1"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">visibility</span>
+                                            <IconRenderer name="visibility" className="text-[18px]" />
                                             Baca
                                         </button>
                                         <button 
@@ -102,7 +103,7 @@ export default function Index({ contacts }) {
                                             className="px-4 py-2 text-sm font-semibold bg-error/10 text-error hover:bg-error hover:text-white rounded-lg transition-colors flex items-center justify-center"
                                             title="Hapus"
                                         >
-                                            <span className="material-symbols-outlined text-[18px]">delete</span>
+                                            <IconRenderer name="delete" className="text-[18px]" />
                                         </button>
                                     </div>
                                 </div>
@@ -143,11 +144,11 @@ export default function Index({ contacts }) {
                     <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-surface-bright rounded-2xl shadow-xl z-50 overflow-hidden flex flex-col max-h-[90vh]">
                         <div className="px-6 py-4 border-b border-outline-variant/60 flex items-center justify-between bg-surface-container-lowest">
                             <h3 className="font-bold text-on-surface text-lg flex items-center gap-2">
-                                <span className="material-symbols-outlined text-primary">mail</span>
+                                <IconRenderer name="mail" className="text-primary" />
                                 Detail Pesan
                             </h3>
                             <button onClick={() => setSelectedMessage(null)} className="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
-                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                <IconRenderer name="close" className="text-[20px]" />
                             </button>
                         </div>
                         <div className="p-6 overflow-y-auto">
@@ -157,7 +158,7 @@ export default function Index({ contacts }) {
                                     <p className="text-sm text-primary font-medium mt-1">{selectedMessage.email}</p>
                                     {selectedMessage.phone && (
                                         <p className="text-sm text-on-surface-variant mt-1 flex items-center gap-1">
-                                            <span className="material-symbols-outlined text-[16px]">call</span>
+                                            <IconRenderer name="call" className="text-[16px]" />
                                             {selectedMessage.phone}
                                         </p>
                                     )}
@@ -184,7 +185,7 @@ export default function Index({ contacts }) {
                                 href={`mailto:${selectedMessage.email}?subject=Balasan dari Marme Villa Jogja`}
                                 className="px-4 py-2 text-sm font-bold bg-primary text-on-primary rounded-lg shadow-sm hover:opacity-90 transition-opacity flex items-center gap-2"
                             >
-                                <span className="material-symbols-outlined text-[18px]">reply</span>
+                                <IconRenderer name="reply" className="text-[18px]" />
                                 Balas via Email
                             </a>
                         </div>

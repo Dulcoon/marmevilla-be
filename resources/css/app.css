@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "material-symbols/outlined.css";
+
 
 @theme {
   --color-primary: #291916;

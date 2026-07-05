@@ -1,4 +1,5 @@
 import { useForm, Head } from '@inertiajs/react';
+import { IconRenderer } from '@/utils/icon-mapper';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { useState } from 'react';
 
@@ -43,7 +44,7 @@ export default function Index({ settings, flash }) {
 
                 {flash?.success && (
                     <div className="bg-[#e8f5e9] text-[#2e7d32] px-4 py-3 rounded-lg border border-[#c8e6c9] flex items-center gap-2">
-                        <span className="material-symbols-outlined">check_circle</span>
+                        <IconRenderer name="check_circle" />
                         <p className="text-sm font-medium">{flash.success}</p>
                     </div>
                 )}
@@ -51,11 +52,11 @@ export default function Index({ settings, flash }) {
                 {/* Tabs */}
                 <div className="flex gap-2 border-b border-outline-variant/30 pb-2">
                     <button onClick={() => setActiveTab('gateway')} className={tabClass('gateway')}>
-                        <span className="material-symbols-outlined text-[18px]">payments</span>
+                        <IconRenderer name="payments" className="text-[18px]" />
                         Gateway Pembayaran
                     </button>
                     <button onClick={() => setActiveTab('general')} className={tabClass('general')}>
-                        <span className="material-symbols-outlined text-[18px]">settings</span>
+                        <IconRenderer name="settings" className="text-[18px]" />
                         Umum & Notifikasi
                     </button>
                 </div>
@@ -81,7 +82,7 @@ export default function Index({ settings, flash }) {
                                         <div className="flex justify-between items-center">
                                             <span className="font-bold text-primary text-base">Midtrans</span>
                                             {data.active_payment_gateway === 'midtrans' && (
-                                                <span className="material-symbols-outlined text-gold font-bold">check_circle</span>
+                                                <IconRenderer name="check_circle" className="text-gold font-bold" />
                                             )}
                                         </div>
                                         <p className="text-xs text-on-surface-variant">Layanan payment gateway lokal terpopuler dengan dukungan pembayaran QRIS, E-Wallet (Gopay, ShopeePay), Kartu Kredit, dan Virtual Account.</p>
@@ -99,7 +100,7 @@ export default function Index({ settings, flash }) {
                                         <div className="flex justify-between items-center">
                                             <span className="font-bold text-[#DE2117] text-base">DOKU Checkout</span>
                                             {data.active_payment_gateway === 'doku' && (
-                                                <span className="material-symbols-outlined text-[#DE2117] font-bold">check_circle</span>
+                                                <IconRenderer name="check_circle" className="text-[#DE2117] font-bold" />
                                             )}
                                         </div>
                                         <p className="text-xs text-on-surface-variant">Layanan DOKU Checkout dengan antar muka pembayaran responsif, terintegrasi e-wallet, link aja, bank transfer, dan gerai ritel modern.</p>
@@ -113,7 +114,7 @@ export default function Index({ settings, flash }) {
                             {data.active_payment_gateway === 'midtrans' ? (
                                 <div className="space-y-4">
                                     <h4 className="font-bold text-primary text-md flex items-center gap-2">
-                                        <span className="material-symbols-outlined text-gold">build</span>
+                                        <IconRenderer name="build" className="text-gold" />
                                         Konfigurasi Midtrans
                                     </h4>
 
@@ -171,7 +172,7 @@ export default function Index({ settings, flash }) {
                             ) : (
                                 <div className="space-y-4">
                                     <h4 className="font-bold text-[#DE2117] text-md flex items-center gap-2">
-                                        <span className="material-symbols-outlined">build</span>
+                                        <IconRenderer name="build" />
                                         Konfigurasi DOKU Checkout
                                     </h4>
 
@@ -235,7 +236,7 @@ export default function Index({ settings, flash }) {
                             {/* Admin Email */}
                             <div>
                                 <label className="block text-sm font-bold text-primary mb-2 flex items-center gap-2">
-                                    <span className="material-symbols-outlined text-[18px]">mail</span>
+                                    <IconRenderer name="mail" className="text-[18px]" />
                                     Email Admin (Notifikasi)
                                 </label>
                                 <p className="text-xs text-on-surface-variant mb-3">
@@ -261,7 +262,7 @@ export default function Index({ settings, flash }) {
                             disabled={processing}
                             className="w-full sm:w-auto bg-primary text-white px-8 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow disabled:opacity-50"
                         >
-                            <span className="material-symbols-outlined text-[20px] sm:text-[18px]">save</span>
+                            <IconRenderer name="save" className="text-[20px] sm:text-[18px]" />
                             Simpan Pengaturan
                         </button>
                     </div>

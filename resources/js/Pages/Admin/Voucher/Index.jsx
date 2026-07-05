@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, router, useForm } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
@@ -111,7 +112,7 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
                         {isEdit ? 'Edit Voucher' : 'Buat Voucher Baru'}
                     </h3>
                     <button type="button" onClick={onClose} className="p-1 rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
-                        <span className="material-symbols-outlined">close</span>
+                        <IconRenderer name="close" />
                     </button>
                 </div>
 
@@ -151,7 +152,7 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
                             <Popover>
                                 <PopoverTrigger asChild>
                                     <button type="button" className="w-full flex items-center gap-3 px-3 py-2 border border-outline-variant rounded-lg bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-left text-primary text-sm">
-                                        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_month</span>
+                                        <IconRenderer name="calendar_month" className="text-[18px] text-on-surface-variant" />
                                         <span className="flex-1 font-body-md text-primary">
                                             {dateRange?.from ? (
                                                 dateRange.to ? (
@@ -315,7 +316,7 @@ export default function Index({ vouchers, stats }) {
                         onClick={openCreateModal}
                         className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
                     >
-                        <span className="material-symbols-outlined text-[18px]">add</span>
+                        <IconRenderer name="add" className="text-[18px]" />
                         Buat Voucher Baru
                     </button>
                 </div>
@@ -325,7 +326,7 @@ export default function Index({ vouchers, stats }) {
                     {/* Stat Card 1 */}
                     <div className="bg-white rounded-xl ghost-border ambient-shadow p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
-                            <span className="material-symbols-outlined text-[20px] sm:text-[24px]">confirmation_number</span>
+                            <IconRenderer name="confirmation_number" className="text-[20px] sm:text-[24px]" />
                         </div>
                         <div>
                             <p className="font-label-md text-[10px] sm:text-label-md text-on-surface-variant uppercase tracking-wider mb-0.5">Total Vouchers</p>
@@ -335,7 +336,7 @@ export default function Index({ vouchers, stats }) {
                     {/* Stat Card 2 */}
                     <div className="bg-white rounded-xl ghost-border ambient-shadow p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#E8F5E9] flex items-center justify-center text-[#2E7D32] shrink-0">
-                            <span className="material-symbols-outlined text-[20px] sm:text-[24px]">check_circle</span>
+                            <IconRenderer name="check_circle" className="text-[20px] sm:text-[24px]" />
                         </div>
                         <div>
                             <p className="font-label-md text-[10px] sm:text-label-md text-on-surface-variant uppercase tracking-wider mb-0.5">Active Vouchers</p>
@@ -345,7 +346,7 @@ export default function Index({ vouchers, stats }) {
                     {/* Stat Card 3 (Full width on mobile) */}
                     <div className="col-span-2 md:col-span-1 bg-white rounded-xl ghost-border ambient-shadow p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
                         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#FFF3E0] flex items-center justify-center text-[#E65100] shrink-0">
-                            <span className="material-symbols-outlined text-[20px] sm:text-[24px]">redeem</span>
+                            <IconRenderer name="redeem" className="text-[20px] sm:text-[24px]" />
                         </div>
                         <div>
                             <p className="font-label-md text-[10px] sm:text-label-md text-on-surface-variant uppercase tracking-wider mb-0.5">Total Redeemed</p>
@@ -360,7 +361,7 @@ export default function Index({ vouchers, stats }) {
                         <h3 className="font-headline-md text-lg sm:text-[20px] font-semibold text-primary">Daftar Voucher</h3>
                         <div className="flex gap-2">
                             <div className="relative flex-1 sm:w-64">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[20px]">search</span>
+                                <IconRenderer name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60 text-[20px]" />
                                 <input 
                                     type="text" 
                                     placeholder="Cari voucher..." 
@@ -368,7 +369,7 @@ export default function Index({ vouchers, stats }) {
                                 />
                             </div>
                             <button className="p-2 border border-outline-variant/50 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors flex items-center justify-center bg-white">
-                                <span className="material-symbols-outlined text-[20px]">filter_list</span>
+                                <IconRenderer name="filter_list" className="text-[20px]" />
                             </button>
                         </div>
                     </div>
@@ -409,10 +410,10 @@ export default function Index({ vouchers, stats }) {
                                                 <td className="p-4 text-center">
                                                     <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <button onClick={() => openEditModal(voucher)} className="text-on-surface-variant hover:text-primary p-1 rounded hover:bg-surface-container-low" title="Edit">
-                                                            <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                            <IconRenderer name="edit" className="text-[20px]" />
                                                         </button>
                                                         <button onClick={() => handleDelete(voucher)} className="text-error/70 hover:text-error p-1 rounded hover:bg-error/10" title="Hapus">
-                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                            <IconRenderer name="delete" className="text-[20px]" />
                                                         </button>
                                                     </div>
                                                 </td>
@@ -435,10 +436,10 @@ export default function Index({ vouchers, stats }) {
                                             {/* Minimalist action menu for mobile */}
                                             <div className="flex gap-1 -mr-2 -mt-2">
                                                 <button onClick={() => openEditModal(voucher)} className="p-2 text-on-surface-variant hover:text-primary">
-                                                    <span className="material-symbols-outlined text-[20px]">edit</span>
+                                                    <IconRenderer name="edit" className="text-[20px]" />
                                                 </button>
                                                 <button onClick={() => handleDelete(voucher)} className="p-2 text-error/80 hover:text-error">
-                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                    <IconRenderer name="delete" className="text-[20px]" />
                                                 </button>
                                             </div>
                                         </div>
@@ -449,11 +450,11 @@ export default function Index({ vouchers, stats }) {
                                         
                                         <div className="flex flex-col gap-1.5 mt-4 pt-4 border-t border-outline-variant/20">
                                             <div className="flex items-center gap-2 text-xs text-on-surface-variant">
-                                                <span className="material-symbols-outlined text-[16px]">calendar_today</span>
+                                                <IconRenderer name="calendar_today" className="text-[16px]" />
                                                 Valid till: {formatDate(voucher.end_date)}
                                             </div>
                                             <div className="flex items-center gap-2 text-xs text-on-surface-variant">
-                                                <span className="material-symbols-outlined text-[16px]">group</span>
+                                                <IconRenderer name="group" className="text-[16px]" />
                                                 Usage: {voucher.used_count} / {voucher.usage_limit || 'Unlimited'}
                                             </div>
                                         </div>

@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, useForm, usePage, Link } from '@inertiajs/react';
 import { useRef, useState } from 'react';
 import Modal from '@/Components/Modal';
@@ -49,7 +50,7 @@ function ProfileInfoCard({ user, mustVerifyEmail, status }) {
             {/* Card Header */}
             <div className="px-4 sm:px-6 py-4 border-b border-outline-variant flex items-center gap-3">
                 <div className="p-2.5 bg-[#fdfaf5] rounded-lg border border-[#f0e8d9]">
-                    <span className="material-symbols-outlined text-[#D4B47D] text-xl">person</span>
+                    <IconRenderer name="person" className="text-[#D4B47D] text-xl" />
                 </div>
                 <div>
                     <h3 className="text-lg sm:text-xl font-bold text-primary leading-tight">Informasi Profil</h3>
@@ -118,7 +119,7 @@ function ProfileInfoCard({ user, mustVerifyEmail, status }) {
                     </button>
                     {recentlySuccessful && (
                         <span className="text-sm font-semibold text-[#2e7d32] flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[16px]">check_circle</span> Tersimpan
+                            <IconRenderer name="check_circle" className="text-[16px]" /> Tersimpan
                         </span>
                     )}
                 </div>
@@ -178,7 +179,7 @@ function PasswordCard() {
                     onClick={() => toggleShow(!show)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors p-0.5"
                 >
-                    <span className="material-symbols-outlined text-[20px]">{show ? 'visibility_off' : 'visibility'}</span>
+                    <IconRenderer name={show ? 'visibility_off' : 'visibility'} className="text-[20px]" />
                 </button>
             </div>
             {error && <p className="mt-1.5 text-xs text-error">{error}</p>}
@@ -189,7 +190,7 @@ function PasswordCard() {
         <div className="bg-white rounded-xl ghost-border ambient-shadow overflow-hidden">
             <div className="px-4 sm:px-6 py-4 border-b border-outline-variant flex items-center gap-3">
                 <div className="p-2.5 bg-[#fdfaf5] rounded-lg border border-[#f0e8d9]">
-                    <span className="material-symbols-outlined text-[#D4B47D] text-xl">lock</span>
+                    <IconRenderer name="lock" className="text-[#D4B47D] text-xl" />
                 </div>
                 <div>
                     <h3 className="text-lg sm:text-xl font-bold text-primary leading-tight">Ubah Password</h3>
@@ -241,7 +242,7 @@ function PasswordCard() {
                     </button>
                     {recentlySuccessful && (
                         <span className="text-sm font-semibold text-[#2e7d32] flex items-center gap-1.5">
-                            <span className="material-symbols-outlined text-[16px]">check_circle</span> Tersimpan
+                            <IconRenderer name="check_circle" className="text-[16px]" /> Tersimpan
                         </span>
                     )}
                 </div>
@@ -274,7 +275,7 @@ function DangerZoneCard() {
             <div className="bg-white rounded-xl ghost-border ambient-shadow overflow-hidden">
                 <div className="px-4 sm:px-6 py-4 border-b border-outline-variant flex items-center gap-3">
                     <div className="p-2.5 bg-[#fff5f5] rounded-lg border border-[#ffcdd2]">
-                        <span className="material-symbols-outlined text-error text-xl">warning</span>
+                        <IconRenderer name="warning" className="text-error text-xl" />
                     </div>
                     <div>
                         <h3 className="text-lg sm:text-xl font-bold text-error leading-tight">Zona Berbahaya</h3>
@@ -290,7 +291,7 @@ function DangerZoneCard() {
                         onClick={confirm}
                         className="mt-4 w-full sm:w-auto px-6 py-2.5 bg-error text-on-error rounded-lg font-button text-sm hover:bg-error/90 transition-colors ambient-shadow active:scale-[0.98] flex items-center justify-center gap-2"
                     >
-                        <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                        <IconRenderer name="delete_forever" className="text-[18px]" />
                         Hapus Akun Saya
                     </button>
                 </div>
@@ -301,7 +302,7 @@ function DangerZoneCard() {
                 <form onSubmit={submit} className="p-6">
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-[#fff5f5] rounded-lg">
-                            <span className="material-symbols-outlined text-error text-2xl">warning</span>
+                            <IconRenderer name="warning" className="text-error text-2xl" />
                         </div>
                         <h2 className="text-xl font-bold text-primary">Hapus Akun Permanen?</h2>
                     </div>
@@ -329,7 +330,7 @@ function DangerZoneCard() {
                             Batal
                         </SecondaryButton>
                         <DangerButton disabled={processing} className="flex items-center justify-center gap-2">
-                            <span className="material-symbols-outlined text-[18px]">delete_forever</span>
+                            <IconRenderer name="delete_forever" className="text-[18px]" />
                             Ya, Hapus Akun Saya
                         </DangerButton>
                     </div>

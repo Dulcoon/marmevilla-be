@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { IconRenderer } from '@/utils/icon-mapper';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Head, useForm, router } from '@inertiajs/react';
 import { Calendar } from "@/components/ui/calendar";
@@ -89,7 +90,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                 ))}
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
-                                <span className="material-symbols-outlined text-[20px]">expand_more</span>
+                                <IconRenderer name="expand_more" className="text-[20px]" />
                             </div>
                         </div>
                     </div>
@@ -102,7 +103,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                             <div className="bg-surface-container-lowest rounded-xl border border-[#E6E2D3] p-6 shadow-[0px_4px_20px_rgba(64,46,42,0.08)] flex flex-col h-full">
                                 <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/30 pb-4">
                                     <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                                        <span className="material-symbols-outlined">event_busy</span>
+                                        <IconRenderer name="event_busy" />
                                     </div>
                                     <div>
                                         <h3 className="font-headline-md text-lg font-semibold text-primary">Blokir Rentang Tanggal</h3>
@@ -116,7 +117,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <Popover>
                                             <PopoverTrigger asChild>
                                                 <button type="button" className="w-full flex items-center gap-3 p-3 bg-[#F9F7F2] border border-outline-variant/30 rounded-xl outline-none focus:border-[#D4B47D] hover:bg-black/5 text-left transition-colors">
-                                                    <span className="material-symbols-outlined text-[20px] text-on-surface-variant">calendar_month</span>
+                                                    <IconRenderer name="calendar_month" className="text-[20px] text-on-surface-variant" />
                                                     <span className="flex-1 font-body-md text-on-surface text-sm">
                                                         {dateRange?.from ? (
                                                             dateRange.to ? (
@@ -208,13 +209,13 @@ export default function Index({ villas, selectedVilla, auth }) {
                                                             className="text-outline-variant hover:text-error transition-colors p-1 rounded-full hover:bg-red-50 flex items-center justify-center"
                                                             title="Hapus Blokir"
                                                         >
-                                                            <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                            <IconRenderer name="delete" className="text-[20px]" />
                                                         </button>
                                                     </div>
                                                 </div>
                                                 {/* Details row */}
                                                 <div className="flex items-center gap-2 text-on-surface-variant text-sm">
-                                                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                                                    <IconRenderer name="calendar_month" className="text-[18px]" />
                                                     <span>
                                                         {new Date(rule.start_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})} &ndash; {new Date(rule.end_date).toLocaleDateString('id-ID', {day: 'numeric', month: 'short', year:'numeric'})}
                                                     </span>
@@ -223,7 +224,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         ))
                                     ) : (
                                         <div className="text-center py-12 text-on-surface-variant">
-                                            <span className="material-symbols-outlined text-4xl text-outline-variant/60 mb-2">calendar_today</span>
+                                            <IconRenderer name="calendar_today" className="text-4xl text-outline-variant/60 mb-2" />
                                             <p className="text-sm">Belum ada tanggal yang diblokir untuk villa ini.</p>
                                         </div>
                                     )}

@@ -6,6 +6,7 @@ import TextInput from '@/Components/TextInput';
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { MATERIAL_ICONS } from '@/utils/material-icons';
+import { IconRenderer } from '@/utils/icon-mapper';
 
 export default function Form({ villa, all_facilities }) {
     const isEditing = !!villa.id;
@@ -339,7 +340,7 @@ export default function Form({ villa, all_facilities }) {
                             className="mt-1 sm:mt-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary transition-colors shrink-0 border border-transparent hover:border-outline-variant/30"
                             title="Kembali ke Daftar"
                         >
-                            <span className="material-symbols-outlined text-[24px] sm:text-[28px]">arrow_back</span>
+                            <IconRenderer name="arrow_back" className="text-[24px] sm:text-[28px]" />
                         </Link>
                         <div>
                             <h2 className="font-headline-xl text-3xl sm:text-headline-xl text-primary font-bold">{isEditing ? 'Edit Villa' : 'Tambah Villa Baru'}</h2>
@@ -390,12 +391,12 @@ export default function Form({ villa, all_facilities }) {
                                         placeholder={`Paragraf ${idx + 1}`}
                                     />
                                     <button type="button" onClick={() => removeArrayItem('long_description', idx)} className="mt-1.5 p-2.5 bg-error/10 text-error rounded-lg hover:bg-error/20 transition-colors">
-                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                        <IconRenderer name="delete" className="text-[18px]" />
                                     </button>
                                 </div>
                             ))}
                             <button type="button" onClick={() => addArrayItem('long_description')} className="mt-2 text-sm text-primary font-semibold flex items-center gap-1 w-fit hover:underline">
-                                <span className="material-symbols-outlined text-[18px]">add_circle</span> Tambah Paragraf
+                                <IconRenderer name="add_circle" className="text-[18px]" /> Tambah Paragraf
                             </button>
                             <InputError message={errors.long_description} />
                         </div>
@@ -440,12 +441,12 @@ export default function Form({ villa, all_facilities }) {
                                         placeholder="Cth: Dapur lengkap dengan alat masak"
                                     />
                                     <button type="button" onClick={() => removeArrayItem('features', idx)} className="mt-1.5 p-2.5 bg-error/10 text-error rounded-lg hover:bg-error/20 transition-colors">
-                                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                                        <IconRenderer name="delete" className="text-[18px]" />
                                     </button>
                                 </div>
                             ))}
                             <button type="button" onClick={() => addArrayItem('features')} className="mt-2 text-sm text-primary font-semibold flex items-center gap-1 w-fit hover:underline">
-                                <span className="material-symbols-outlined text-[18px]">add_circle</span> Tambah Fitur
+                                <IconRenderer name="add_circle" className="text-[18px]" /> Tambah Fitur
                             </button>
                             <InputError message={errors.features} />
                         </div>
@@ -459,7 +460,7 @@ export default function Form({ villa, all_facilities }) {
                                         onClick={() => setShowFacilityModal(true)}
                                         className="text-xs bg-primary/10 text-primary font-semibold px-3 py-1 rounded hover:bg-primary/20 transition-colors flex items-center gap-1"
                                     >
-                                        <span className="material-symbols-outlined text-[16px]">add</span> Tambah
+                                        <IconRenderer name="add" className="text-[16px]" /> Tambah
                                     </button>
                                 </div>
                                 <div className="flex flex-col gap-1.5 mt-2">
@@ -479,7 +480,7 @@ export default function Form({ villa, all_facilities }) {
                                                     }}
                                                     className="rounded border-outline-variant text-primary focus:ring-primary focus:ring-offset-0 transition-colors w-4 h-4 shrink-0"
                                                 />
-                                                <span className="material-symbols-outlined text-[20px] text-primary shrink-0">{facility.icon || 'check_circle'}</span>
+                                                <IconRenderer name={facility.icon || 'check_circle'} className="text-[20px] text-primary shrink-0" />
                                                 <span className="text-sm text-on-surface truncate">{facility.name}</span>
                                             </label>
                                             <button
@@ -495,7 +496,7 @@ export default function Form({ villa, all_facilities }) {
                                                 title={`Hapus ${facility.name}`}
                                                 aria-label={`Hapus fasilitas ${facility.name}`}
                                             >
-                                                <span className="material-symbols-outlined text-[18px]">delete</span>
+                                                <IconRenderer name="delete" className="text-[18px]" />
                                             </button>
                                         </div>
                                     ))}
@@ -586,7 +587,7 @@ export default function Form({ villa, all_facilities }) {
                                     }}
                                     className="text-xs bg-primary/10 text-primary font-semibold px-4 py-2 rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-1 shrink-0 ml-auto sm:ml-0"
                                 >
-                                    <span className="material-symbols-outlined text-[18px]">add</span> Album Baru
+                                    <IconRenderer name="add" className="text-[18px]" /> Album Baru
                                 </button>
                             </div>
                         </div>
@@ -620,17 +621,17 @@ export default function Form({ villa, all_facilities }) {
                                                         draggable={true}
                                                         onDragStart={(e) => handleDragStart(e, idx)}
                                                         onDragEnd={handleDragEnd}
-                                                        className="material-symbols-outlined cursor-grab text-on-surface-variant hover:text-primary active:cursor-grabbing hover:bg-surface-variant/40 rounded p-1 shrink-0 select-none" 
+                                                        className=" cursor-grab text-on-surface-variant hover:text-primary active:cursor-grabbing hover:bg-surface-variant/40 rounded p-1 shrink-0 select-none" 
                                                         title="Tarik untuk mengurutkan album"
                                                     >
                                                         drag_indicator
                                                     </span>
                                                 ) : (
-                                                    <span className="material-symbols-outlined text-outline-variant/60 shrink-0 select-none" title="Album default (selalu di akhir)">lock</span>
+                                                    <IconRenderer name="lock" className="text-outline-variant/60 shrink-0 select-none" title="Album default (selalu di akhir)" />
                                                 )}
                                                 
                                                 {/* Album Icon & Title Rename */}
-                                                <span className="material-symbols-outlined text-primary shrink-0">photo_library</span>
+                                                <IconRenderer name="photo_library" className="text-primary shrink-0" />
                                                 <input
                                                     type="text"
                                                     defaultValue={albumName}
@@ -653,9 +654,7 @@ export default function Form({ villa, all_facilities }) {
                                                 className="p-1 hover:bg-surface-container-high rounded-full transition-colors flex items-center justify-center text-on-surface-variant shrink-0"
                                                 aria-label={isCollapsed ? "Buka album" : "Lipat album"}
                                             >
-                                                <span className="material-symbols-outlined text-[24px]">
-                                                    {isCollapsed ? 'expand_more' : 'expand_less'}
-                                                </span>
+                                                <IconRenderer name={isCollapsed ? 'expand_more' : 'expand_less'} className="text-[24px]" />
                                             </button>
                                         </div>
 
@@ -672,11 +671,11 @@ export default function Form({ villa, all_facilities }) {
                                                             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2 flex justify-between items-end gap-2">
                                                                 {!img.is_primary ? (
                                                                     <button type="button" onClick={() => setPrimaryImage(img.id)} className="text-white hover:text-primary flex items-center bg-black/40 rounded p-1">
-                                                                        <span className="material-symbols-outlined text-[20px]">star</span>
+                                                                        <IconRenderer name="star" className="text-[20px]" />
                                                                     </button>
                                                                 ) : <div></div>}
                                                                 <button type="button" onClick={() => removeExistingImage(img.id)} className="text-error hover:text-error/80 flex items-center bg-black/40 rounded p-1">
-                                                                    <span className="material-symbols-outlined text-[20px]">delete</span>
+                                                                    <IconRenderer name="delete" className="text-[20px]" />
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -704,7 +703,7 @@ export default function Form({ villa, all_facilities }) {
                                                                 onClick={() => removeLocalImage(img.globalIndex)}
                                                                 className="absolute top-2 right-2 bg-error text-white rounded-full p-1 shadow-md hover:bg-error/90 flex items-center justify-center"
                                                             >
-                                                                <span className="material-symbols-outlined text-[16px]">close</span>
+                                                                <IconRenderer name="close" className="text-[16px]" />
                                                             </button>
                                                         </div>
                                                         <div className="flex flex-col gap-1">
@@ -730,7 +729,7 @@ export default function Form({ villa, all_facilities }) {
                                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                                         title={`Upload ke album ${albumName}`}
                                                     />
-                                                    <span className="material-symbols-outlined text-3xl text-outline-variant group-hover:text-primary mb-2">add_photo_alternate</span>
+                                                    <IconRenderer name="add_photo_alternate" className="text-[32px] text-outline-variant group-hover:text-primary mb-2" />
                                                     <p className="text-sm font-medium text-on-surface">Tambah Foto</p>
                                                 </div>
                                             </div>
@@ -747,7 +746,7 @@ export default function Form({ villa, all_facilities }) {
                     {/* SECTION: Pengaturan SEO */}
                     <div className="bg-white rounded-xl p-4 sm:p-6 ghost-border ambient-shadow flex flex-col gap-6">
                         <div className="border-b border-outline-variant/50 pb-3 flex items-center gap-2">
-                            <span className="material-symbols-outlined text-primary text-3xl">search</span>
+                            <IconRenderer name="search" className="text-primary text-[32px]" />
                             <div>
                                 <h3 className="text-headline-sm font-bold text-primary">Pengaturan SEO (Optimasi Google)</h3>
                                 <p className="text-xs text-on-surface-variant mt-0.5">Atur judul dan deskripsi pencarian agar judul halaman menarik dan relevan di hasil pencarian Google.</p>
@@ -758,7 +757,7 @@ export default function Form({ villa, all_facilities }) {
                             {/* Bahasa Indonesia */}
                             <div className="flex flex-col gap-6 border-r border-outline-variant/30 pr-0 md:pr-6">
                                 <h4 className="text-sm font-bold text-primary flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-sm">language</span> Bahasa Indonesia
+                                    <IconRenderer name="language" className="text-[16px]" /> Bahasa Indonesia
                                 </h4>
 
                                 {/* SEO Title (ID) */}
@@ -817,7 +816,7 @@ export default function Form({ villa, all_facilities }) {
                             {/* English Translation */}
                             <div className="flex flex-col gap-6">
                                 <h4 className="text-sm font-bold text-primary flex items-center gap-1">
-                                    <span className="material-symbols-outlined text-sm">language</span> English Translation
+                                    <IconRenderer name="language" className="text-[16px]" /> English Translation
                                 </h4>
 
                                 {/* SEO Title (EN) */}
@@ -905,7 +904,7 @@ export default function Form({ villa, all_facilities }) {
                                 setShowFacilityModal(false);
                                 setFacilityError('');
                             }} className="text-outline hover:text-error transition-colors p-1">
-                                <span className="material-symbols-outlined text-[20px]">close</span>
+                                <IconRenderer name="close" className="text-[20px]" />
                             </button>
                         </div>
                         
@@ -933,7 +932,7 @@ export default function Form({ villa, all_facilities }) {
                                     <InputLabel value="Cari & Pilih Icon" />
                                     {newFacilityIcon && (
                                         <div className="text-xs text-primary font-medium flex items-center gap-1">
-                                            Terpilih: <span className="material-symbols-outlined text-[16px]">{newFacilityIcon}</span> {newFacilityIcon}
+                                            Terpilih: <IconRenderer name={newFacilityIcon} className="text-[20px] text-primary" /> {newFacilityIcon}
                                         </div>
                                     )}
                                 </div>
@@ -953,7 +952,7 @@ export default function Form({ villa, all_facilities }) {
                                             className={`p-2 rounded flex flex-col items-center justify-center transition-all ${newFacilityIcon === icon ? 'bg-primary text-white scale-110 shadow-sm' : 'bg-surface-variant/20 text-on-surface-variant hover:bg-surface-variant/50 hover:text-primary'}`}
                                             title={icon}
                                         >
-                                            <span className="material-symbols-outlined text-[24px]">{icon}</span>
+                                            <IconRenderer name={icon} className="text-[24px]" />
                                         </button>
                                     )) : (
                                         <div className="col-span-full text-center text-sm text-outline py-4">Icon tidak ditemukan.</div>

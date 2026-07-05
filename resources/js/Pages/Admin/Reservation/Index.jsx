@@ -1,4 +1,5 @@
 import AdminLayout from '@/Layouts/AdminLayout';
+import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -91,13 +92,13 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                 {/* Flash messages */}
                 {flash?.success && (
                     <div className="flex items-center gap-3 p-4 bg-emerald-50 text-emerald-700 rounded-xl border border-emerald-200">
-                        <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                        <IconRenderer name="check_circle" className="text-[20px]" />
                         <span className="text-sm font-medium">{flash.success}</span>
                     </div>
                 )}
                 {flash?.error && (
                     <div className="flex items-center gap-3 p-4 bg-red-50 text-red-700 rounded-xl border border-red-200">
-                        <span className="material-symbols-outlined text-[20px]">error</span>
+                        <IconRenderer name="error" className="text-[20px]" />
                         <span className="text-sm font-medium">{flash.error}</span>
                     </div>
                 )}
@@ -107,7 +108,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                     {summaryCards.map((c) => (
                         <div key={c.label} className="bg-white rounded-xl p-4 ghost-border ambient-shadow flex flex-col gap-2">
                             <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${c.color}`}>
-                                <span className="material-symbols-outlined text-[20px]">{c.icon}</span>
+                                <IconRenderer name={c.icon} className="text-[20px]" />
                             </div>
                             <div className="text-2xl font-bold text-primary">{c.value}</div>
                             <div className="text-xs text-on-surface-variant leading-tight">{c.label}</div>
@@ -121,7 +122,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                         {/* Search */}
                         <form onSubmit={handleSearch} className="flex-1 flex gap-2">
                             <div className="relative flex-1">
-                                <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                                <IconRenderer name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]" />
                                 <input
                                     type="text"
                                     value={search}
@@ -181,7 +182,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                                     }}
                                     className="w-full sm:w-auto px-3 py-2 text-sm text-error bg-error/10 rounded-lg hover:bg-error/20 transition-colors flex justify-center items-center gap-1"
                                 >
-                                    <span className="material-symbols-outlined text-[16px]">close</span>
+                                    <IconRenderer name="close" className="text-[16px]" />
                                     Reset
                                 </button>
                             )}
@@ -195,7 +196,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                     <div className="md:hidden divide-y divide-outline-variant/30">
                         {bookings.data.length === 0 && (
                             <div className="text-center py-12 text-on-surface-variant">
-                                <span className="material-symbols-outlined text-4xl block mb-2 text-outline">inbox</span>
+                                <IconRenderer name="inbox" className="text-4xl block mb-2 text-outline" />
                                 <p className="font-medium">Tidak ada reservasi ditemukan</p>
                                 <p className="text-xs mt-1">Coba ubah filter pencarian Anda</p>
                             </div>
@@ -246,7 +247,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                                     className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2.5 text-sm font-bold text-primary bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors"
                                 >
                                     Detail Reservasi
-                                    <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+                                    <IconRenderer name="chevron_right" className="text-[16px]" />
                                 </Link>
                             </div>
                         ))}
@@ -271,7 +272,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                                 {bookings.data.length === 0 && (
                                     <tr>
                                         <td colSpan={8} className="text-center py-16 text-on-surface-variant">
-                                            <span className="material-symbols-outlined text-4xl block mb-2 text-outline">inbox</span>
+                                            <IconRenderer name="inbox" className="text-4xl block mb-2 text-outline" />
                                             <p className="font-medium">Tidak ada reservasi ditemukan</p>
                                             <p className="text-xs mt-1">Coba ubah filter pencarian Anda</p>
                                         </td>
@@ -318,7 +319,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                                                 className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors"
                                             >
                                                 Detail
-                                                <span className="material-symbols-outlined text-[14px]">chevron_right</span>
+                                                <IconRenderer name="chevron_right" className="text-[14px]" />
                                             </Link>
                                         </td>
                                     </tr>
