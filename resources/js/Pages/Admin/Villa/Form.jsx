@@ -132,10 +132,12 @@ export default function Form({ villa, all_facilities }) {
             const popularIcons = [
                 'wifi', 'pool', 'ac_unit', 'kitchen', 'restaurant', 
                 'tv', 'hot_tub', 'local_parking', 'sports_tennis', 'spa',
-                'water_drop', 'coffee_maker', 'local_drink', 'lock', 'checkroom', 'flight', 'fitness_center'
+                'water_drop', 'coffee_maker', 'local_drink', 'lock', 'checkroom', 'flight', 'fitness_center',
+                'king_bed', 'bathtub', 'microwave', 'iron', 'pets', 'family_restroom', 'balcony', 'outdoor_grill',
+                'chair', 'desk', 'stroller', 'grass', 'games', 'security'
             ];
             // Gunakan Set untuk mencegah duplikasi key pada React (misal 'wifi' ada di popular dan MATERIAL_ICONS)
-            return [...new Set([...popularIcons, ...MATERIAL_ICONS.slice(0, 40)])].slice(0, 50);
+            return [...new Set([...popularIcons, ...MATERIAL_ICONS.slice(0, 100)])].slice(0, 150);
         }
         const query = searchIconQuery.toLowerCase().replace(/[^a-z_]/g, '');
         return MATERIAL_ICONS.filter(icon => icon.includes(query)).slice(0, 100);
@@ -624,7 +626,7 @@ export default function Form({ villa, all_facilities }) {
                                                         className=" cursor-grab text-on-surface-variant hover:text-primary active:cursor-grabbing hover:bg-surface-variant/40 rounded p-1 shrink-0 select-none" 
                                                         title="Tarik untuk mengurutkan album"
                                                     >
-                                                        drag_indicator
+                                                        <IconRenderer name="drag_indicator" />
                                                     </span>
                                                 ) : (
                                                     <IconRenderer name="lock" className="text-outline-variant/60 shrink-0 select-none" title="Album default (selalu di akhir)" />
@@ -943,7 +945,7 @@ export default function Form({ villa, all_facilities }) {
                                     className={`${inputClasses} mb-2`} 
                                     placeholder="Ketik untuk mencari icon... (cth: bed, car, fire)" 
                                 />
-                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-surface-container-lowest border border-outline-variant rounded-lg max-h-48 overflow-y-auto">
+                                <div className="grid grid-cols-6 sm:grid-cols-8 gap-2 p-3 bg-surface-container-lowest border border-outline-variant rounded-lg max-h-72 overflow-y-auto">
                                     {filteredIcons.length > 0 ? filteredIcons.map(icon => (
                                         <button
                                             key={icon}

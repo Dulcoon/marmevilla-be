@@ -15,7 +15,11 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\NewPendingBookingNotification;
+use App\Notifications\PaymentErrorNotification;
+use App\Mail\BookingPaymentError;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -392,16 +396,32 @@ class BookingApiController extends Controller
             }
 
         } catch (\Exception $e) {
-            // Rollback/delete the booking if it was successfully created in the DB but payment API failed afterwards
+            // Booking tetap disimpan, status diubah jadi payment_error
             if ($booking) {
                 try {
-                    $booking->delete();
-                } catch (\Exception $delEx) {
-                    Log::error("BookingApiController: Failed to rollback booking record: " . $delEx->getMessage());
+                    $booking->update([
+                        'booking_status' => 'payment_error',
+                        'notes' => 'Gagal mendapatkan token pembayaran: ' . $e->getMessage()
+                    ]);
+
+                    // Notifikasi in-app ke semua admin
+                    Notification::send(User::all(), new PaymentErrorNotification($booking));
+
+                    // Email notifikasi ke admin jika dikonfigurasi
+                    try {
+                        $adminEmail = Setting::where('key', 'admin_email')->value('value');
+                        if ($adminEmail) {
+                            Mail::to($adminEmail)->send(new BookingPaymentError($booking, $e->getMessage()));
+                        }
+                    } catch (\Exception $mailEx) {
+                        Log::error("BookingApiController: Failed to send payment error email: " . $mailEx->getMessage());
+                    }
+                } catch (\Exception $updateEx) {
+                    Log::error("BookingApiController: Failed to update booking status: " . $updateEx->getMessage());
                 }
             }
 
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            return response()->json(['status' => 'error', 'message' => 'Gagal memproses pembayaran. Silakan coba lagi.'], 500);
         }
     }
 }
