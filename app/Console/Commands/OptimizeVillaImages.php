@@ -5,7 +5,9 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\VillaImage;
 use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Laravel\Facades\Image;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
+use Intervention\Image\Encoders\WebpEncoder;
 
 class OptimizeVillaImages extends Command
 {
@@ -21,6 +23,11 @@ class OptimizeVillaImages extends Command
         $quality = (int) $this->option('quality');
         $maxWidth = (int) $this->option('max-width');
         $dryRun = $this->option('dry-run');
+
+        if (!class_exists(ImageManager::class)) {
+            $this->error('Intervention Image library not found. Run: composer require intervention/image-laravel');
+            return self::FAILURE;
+        }
 
         $this->info("Scanning for non-WebP images in storage/app/public/villas/...");
         if ($dryRun) {
@@ -42,6 +49,8 @@ class OptimizeVillaImages extends Command
         $converted = 0;
         $skipped = 0;
         $errors = 0;
+
+        $manager = new ImageManager(new Driver());
 
         foreach ($nonWebpFiles as $file) {
             $fullPath = Storage::disk('public')->path($file);
@@ -70,24 +79,24 @@ class OptimizeVillaImages extends Command
             }
 
             try {
-                $img = Image::read($fullPath);
+                $img = $manager->decodePath($fullPath);
 
-                $originalWidth = $img->width();
-                if ($originalWidth > $maxWidth) {
+                if ($img->width() > $maxWidth) {
                     $img->scale(width: $maxWidth);
                 }
 
-                $img->toWebp($quality)->save($webpFullPath);
+                $encoded = $img->encode(new WebpEncoder(quality: $quality));
+                $encoded->save($webpFullPath);
 
                 if (!file_exists($webpFullPath) || filesize($webpFullPath) === 0) {
                     throw new \Exception("Converted file is empty or missing");
                 }
 
                 $dbUpdated = false;
-                $oldUrlPattern = '/storage/' . $file;
+                $oldUrl = '/storage/' . $file;
                 $newUrl = '/storage/' . $webpFile;
 
-                $records = VillaImage::where('image_url', $oldUrlPattern)->get();
+                $records = VillaImage::where('image_url', $oldUrl)->get();
 
                 if ($records->isNotEmpty()) {
                     foreach ($records as $record) {
@@ -98,7 +107,7 @@ class OptimizeVillaImages extends Command
                 }
 
                 if (!$dbUpdated) {
-                    $this->warn("  ↳ No DB record found for {$oldUrlPattern}. WebP saved, but DB unchanged.");
+                    $this->warn("  ↳ No DB record found for {$oldUrl}. WebP saved, but DB unchanged.");
                 }
 
                 Storage::disk('public')->delete($file);
