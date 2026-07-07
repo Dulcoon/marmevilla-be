@@ -15,6 +15,7 @@ Route::get('/user', function (Request $request) {
 
 // Frontend endpoints
 Route::get('/villas', [VillaApiController::class, 'index'])->middleware('throttle:60,1');
+Route::get('/villas/lite', [VillaApiController::class, 'lite'])->middleware('throttle:60,1');
 Route::get('/villas/{slug}', [VillaApiController::class, 'show'])->middleware('throttle:60,1');
 Route::get('/villas/{slug}/booked-dates', [BookingApiController::class, 'getBookedDates'])->middleware('throttle:60,1');
 Route::post('/check-availability', [BookingApiController::class, 'checkAvailability'])->middleware('throttle:20,1');
