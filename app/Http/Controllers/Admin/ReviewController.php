@@ -59,6 +59,20 @@ class ReviewController extends Controller
         return back()->with('success', 'Ulasan ditampilkan di beranda. (Maks. 3 ulasan ditampilkan)');
     }
 
+    public function update(Request $request, Review $review)
+    {
+        $validated = $request->validate([
+            'guest_name' => 'required|string|max:100',
+            'city'       => 'required|string|max:100',
+            'rating'     => 'required|integer|min:1|max:5',
+            'comment'    => 'required|string|min:10|max:1000',
+        ]);
+
+        $review->update($validated);
+
+        return back()->with('success', 'Ulasan berhasil diperbarui.');
+    }
+
     public function destroy(Review $review)
     {
         $review->delete();

@@ -72,6 +72,7 @@ Route::middleware('auth')->group(function () {
         // Review Routes
         Route::get('reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
         Route::patch('reviews/{review}/toggle-publish', [\App\Http\Controllers\Admin\ReviewController::class, 'togglePublish'])->name('reviews.toggle-publish');
+        Route::put('reviews/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'update'])->name('reviews.update');
         Route::delete('reviews/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
     });
 });
