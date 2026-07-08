@@ -32,6 +32,7 @@ class BookingApiController extends Controller
         
         $period = CarbonPeriod::create($startDate, $endDate->copy()->subDay());
         $basePriceTotal = 0;
+        $breakdown = [];
         
         $customPrices = $villa->customPrices()->where('end_date', '>=', $startDate->format('Y-m-d'))
             ->where('start_date', '<=', $endDate->format('Y-m-d'))
@@ -40,19 +41,27 @@ class BookingApiController extends Controller
         foreach ($period as $date) {
             $currentPrice = $villa->base_price;
             $isWeekend = $date->isWeekend(); // Saturday and Sunday
+            $rateType = 'standard';
 
             if ($villa->weekend_enabled && $isWeekend && $villa->weekend_price) {
                 $currentPrice = $villa->weekend_price;
+                $rateType = 'weekend';
             }
 
             foreach ($customPrices as $cp) {
                 if ($date->between(Carbon::parse($cp->start_date), Carbon::parse($cp->end_date))) {
                     $currentPrice = $cp->custom_price;
+                    $rateType = 'custom';
                     break;
                 }
             }
 
             $basePriceTotal += $currentPrice;
+            $breakdown[] = [
+                'date' => $date->format('Y-m-d'),
+                'price' => (int) $currentPrice,
+                'type' => $rateType
+            ];
         }
 
         $extraGuests = max(0, $guests - $villa->capacity);
@@ -63,7 +72,8 @@ class BookingApiController extends Controller
             'extra_charge_total' => $extraChargeTotal,
             'total' => $basePriceTotal + $extraChargeTotal,
             'nights' => $period->count(),
-            'extra_guests' => $extraGuests
+            'extra_guests' => $extraGuests,
+            'breakdown' => $breakdown
         ];
     }
 
@@ -424,4 +434,55 @@ class BookingApiController extends Controller
             return response()->json(['status' => 'error', 'message' => 'Gagal memproses pembayaran. Silakan coba lagi.'], 500);
         }
     }
+
+    public function showStatus(Request $request)
+    {
+        $request->validate([
+            'booking_code' => 'required|string',
+            'email' => 'required|email',
+        ]);
+
+        $booking = Booking::with(['villa.images'])
+            ->where('booking_code', $request->booking_code)
+            ->where('guest_email', $request->email)
+            ->first();
+
+        if (!$booking) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Reservasi tidak ditemukan atau data email tidak cocok.'
+            ], 404);
+        }
+
+        // Add payment gateway details if payment is pending
+        $paymentGateway = Setting::where('key', 'active_payment_gateway')->value('value') ?? 'midtrans';
+        $paymentUrl = null;
+        $snapToken = null;
+
+        if ($booking->payment_status === 'pending') {
+            if ($paymentGateway === 'doku') {
+                $latestPendingPayment = $booking->payments()
+                    ->where('provider', 'doku')
+                    ->where('transaction_status', 'pending')
+                    ->latest()
+                    ->first();
+                if ($latestPendingPayment) {
+                    $paymentUrl = $latestPendingPayment->snap_token; // DOKU uses snap_token column to store payment URL
+                }
+            } else {
+                $snapToken = $booking->midtrans_snap_token;
+            }
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'booking' => $booking,
+                'payment_gateway' => $paymentGateway,
+                'payment_url' => $paymentUrl,
+                'snap_token' => $snapToken,
+            ]
+        ]);
+    }
 }
+
