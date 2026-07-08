@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\BookingApiController;
 use App\Http\Controllers\Api\MidtransWebhookController;
 use App\Http\Controllers\Api\DokuWebhookController;
 use App\Http\Controllers\Api\ContactApiController;
+use App\Http\Controllers\Api\ReviewApiController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -24,3 +25,8 @@ Route::post('/bookings', [BookingApiController::class, 'store'])->middleware('th
 Route::post('/contact', [ContactApiController::class, 'store'])->middleware('throttle:3,1');
 Route::post('/midtrans/webhook', [MidtransWebhookController::class, 'handleWebhook'])->middleware('throttle:10,1');
 Route::post('/doku/webhook', [DokuWebhookController::class, 'handleWebhook'])->middleware('throttle:10,1');
+
+// Review routes
+Route::get('/reviews', [ReviewApiController::class, 'published'])->middleware('throttle:60,1');
+Route::get('/reviews/form/{token}', [ReviewApiController::class, 'showForm'])->middleware('throttle:30,1');
+Route::post('/reviews/form/{token}', [ReviewApiController::class, 'submitForm'])->middleware('throttle:5,1');

@@ -3,9 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Review;
 use App\Models\Villa;
 use App\Models\BlockedDate;
+use App\Models\Setting;
+use App\Mail\ReviewRequestMail;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -116,12 +121,45 @@ class BookingController extends Controller
             'payment_status' => 'nullable|in:pending,paid,failed,refunded',
         ]);
 
+        $previousStatus = $booking->booking_status;
+
         $data = array_filter([
             'booking_status' => $request->booking_status,
             'payment_status' => $request->payment_status,
         ], fn($v) => $v !== null);
 
         $booking->update($data);
+
+        // Auto-send review request email when admin sets status to checked_out
+        if (
+            isset($data['booking_status']) &&
+            $data['booking_status'] === 'checked_out' &&
+            $previousStatus !== 'checked_out' &&
+            !$booking->review()->exists()
+        ) {
+            $review = Review::create([
+                'booking_id'   => $booking->id,
+                'token'        => Str::random(40),
+                'guest_name'   => $booking->guest_name,
+                'city'         => '',
+                'rating'       => 5,
+                'comment'      => '',
+                'is_published' => false,
+                'status'       => 'pending',
+            ]);
+
+            $booking->loadMissing('villa');
+            $review->setRelation('booking', $booking);
+
+            try {
+                Mail::to($booking->guest_email)->send(new ReviewRequestMail($review));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('Failed to send review request email', [
+                    'booking_id' => $booking->id,
+                    'error'      => $e->getMessage(),
+                ]);
+            }
+        }
 
         return back()->with('success', 'Status reservasi berhasil diperbarui.');
     }

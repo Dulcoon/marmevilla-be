@@ -11,8 +11,10 @@ export default function AdminSidebar({ isOpen, onClose }) {
         { name: 'Blokir Tanggal', icon: 'event_busy', href: route('admin.blocked-dates.index'), active: url.startsWith('/admin/blocked-dates') },
         { name: 'Voucher', icon: 'confirmation_number', href: route('admin.vouchers.index'), active: url.startsWith('/admin/vouchers') },
         { name: 'Reservasi', icon: 'calendar_month', href: route('admin.reservations.index'), active: url.startsWith('/admin/reservations') },
+        { name: 'Ulasan Tamu', icon: 'rate_review', href: route('admin.reviews.index'), active: url.startsWith('/admin/reviews') },
         { name: 'Laporan', icon: 'analytics', href: '#', active: false },
     ];
+
 
     const footerItems = [
         { name: 'Pengaturan', icon: 'settings', href: route('admin.settings.index'), active: url.startsWith('/admin/settings') },

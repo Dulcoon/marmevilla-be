@@ -68,7 +68,13 @@ Route::middleware('auth')->group(function () {
         Route::patch('contacts/{id}/mark-as-read', [ContactController::class, 'markAsRead'])->name('contacts.mark-as-read');
         Route::patch('contacts/mark-all-read', [ContactController::class, 'markAllAsRead'])->name('contacts.mark-all-read');
         Route::delete('contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+        // Review Routes
+        Route::get('reviews', [\App\Http\Controllers\Admin\ReviewController::class, 'index'])->name('reviews.index');
+        Route::patch('reviews/{review}/toggle-publish', [\App\Http\Controllers\Admin\ReviewController::class, 'togglePublish'])->name('reviews.toggle-publish');
+        Route::delete('reviews/{review}', [\App\Http\Controllers\Admin\ReviewController::class, 'destroy'])->name('reviews.destroy');
     });
 });
+
 
 require __DIR__.'/auth.php';
