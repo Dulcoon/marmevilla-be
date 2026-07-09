@@ -40,7 +40,7 @@ class BookingApiController extends Controller
 
         foreach ($period as $date) {
             $currentPrice = $villa->base_price;
-            $isWeekend = $date->isWeekend(); // Saturday and Sunday
+            $isWeekend = $date->isFriday() || $date->isSaturday(); // Friday and Saturday night
             $rateType = 'standard';
 
             if ($villa->weekend_enabled && $isWeekend && $villa->weekend_price) {
