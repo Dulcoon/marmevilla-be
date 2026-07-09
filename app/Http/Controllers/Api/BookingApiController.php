@@ -421,7 +421,10 @@ class BookingApiController extends Controller
                     try {
                         $adminEmail = Setting::where('key', 'admin_email')->value('value');
                         if ($adminEmail) {
-                            Mail::to($adminEmail)->send(new BookingPaymentError($booking, $e->getMessage()));
+                            $emails = array_filter(array_map('trim', explode(',', $adminEmail)));
+                            if (!empty($emails)) {
+                                Mail::to($emails)->send(new BookingPaymentError($booking, $e->getMessage()));
+                            }
                         }
                     } catch (\Exception $mailEx) {
                         Log::error("BookingApiController: Failed to send payment error email: " . $mailEx->getMessage());

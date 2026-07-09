@@ -53,7 +53,10 @@ class PaymentService
 
                 $adminEmail = Setting::where('key', 'admin_email')->value('value');
                 if ($adminEmail) {
-                    Mail::to($adminEmail)->send(new AdminBookingNotification($booking));
+                    $emails = array_filter(array_map('trim', explode(',', $adminEmail)));
+                    if (!empty($emails)) {
+                        Mail::to($emails)->send(new AdminBookingNotification($booking));
+                    }
                 }
 
                 Notification::send(User::all(), new BookingConfirmedNotification($booking));

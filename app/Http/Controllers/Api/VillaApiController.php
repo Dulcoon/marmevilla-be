@@ -11,24 +11,28 @@ class VillaApiController extends Controller
     private function attachDisplayPrice($villas)
     {
         $villaIds = $villas->pluck('id');
+        $today = \Carbon\Carbon::today()->toDateString();
+        $isWeekend = \Carbon\Carbon::today()->isWeekend();
 
         $customPriceMins = \App\Models\VillaCustomPrice::whereIn('villa_id', $villaIds)
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
             ->selectRaw('villa_id, MIN(custom_price) as min_price')
             ->groupBy('villa_id')
             ->pluck('min_price', 'villa_id');
 
-        $villas->each(function ($villa) use ($customPriceMins) {
-            $prices = [$villa->base_price];
+        $villas->each(function ($villa) use ($customPriceMins, $isWeekend) {
+            $price = $villa->base_price;
 
-            if ($villa->weekend_enabled && $villa->weekend_price) {
-                $prices[] = $villa->weekend_price;
+            if ($isWeekend && $villa->weekend_enabled && $villa->weekend_price) {
+                $price = $villa->weekend_price;
             }
 
             if (isset($customPriceMins[$villa->id])) {
-                $prices[] = (int) $customPriceMins[$villa->id];
+                $price = (int) $customPriceMins[$villa->id];
             }
 
-            $villa->display_price = min($prices);
+            $villa->display_price = $price;
             $villa->makeHidden('customPrices');
         });
     }

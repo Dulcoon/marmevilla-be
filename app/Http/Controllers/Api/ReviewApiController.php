@@ -67,7 +67,10 @@ class ReviewApiController extends Controller
         // Notify admin
         $adminEmail = Setting::where('key', 'admin_email')->value('value') ?? config('mail.from.address');
         try {
-            Mail::to($adminEmail)->send(new NewReviewAdminNotificationMail($review));
+            $emails = array_filter(array_map('trim', explode(',', $adminEmail)));
+            if (!empty($emails)) {
+                Mail::to($emails)->send(new NewReviewAdminNotificationMail($review));
+            }
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Failed to send admin review notification', [
                 'review_id' => $review->id,

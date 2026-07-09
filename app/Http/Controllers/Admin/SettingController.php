@@ -30,7 +30,19 @@ class SettingController extends Controller
             'doku_secret_key' => 'nullable|string',
             'doku_is_production' => 'required|string|in:true,false,1,0',
             'doku_expiry_minutes' => 'required|integer|min:1',
-            'admin_email' => 'required|email',
+            'admin_email' => [
+                'nullable',
+                'string',
+                function ($attribute, $value, $fail) {
+                    if (empty($value)) return;
+                    $emails = array_filter(array_map('trim', explode(',', $value)));
+                    foreach ($emails as $email) {
+                        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                            $fail('Format email "' . $email . '" tidak valid.');
+                        }
+                    }
+                }
+            ],
         ]);
 
         foreach ($data as $key => $value) {

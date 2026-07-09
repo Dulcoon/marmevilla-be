@@ -100,7 +100,7 @@ class DokuWebhookController extends Controller
                 $amount,
                 $notification
             );
-        } else if ($dokuStatus === 'FAILED') {
+        } else if ($dokuStatus === 'FAILED' || $dokuStatus === 'EXPIRED') {
             $this->paymentService->failPayment(
                 $booking,
                 'doku',

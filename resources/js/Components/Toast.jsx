@@ -42,6 +42,16 @@ export default function Toast() {
         }
     }, [flash, errors]);
 
+    useEffect(() => {
+        const handleCustomToast = (e) => {
+            setToast({ type: e.detail.type || 'success', message: e.detail.message });
+            setVisible(true);
+        };
+
+        window.addEventListener('show-toast', handleCustomToast);
+        return () => window.removeEventListener('show-toast', handleCustomToast);
+    }, []);
+
     if (!visible) return null;
 
     const styles = {
