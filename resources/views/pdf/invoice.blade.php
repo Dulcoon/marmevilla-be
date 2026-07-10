@@ -158,9 +158,9 @@
                 </td>
                 <td class="company-info-cell">
                     <div class="company-name">MARME VILLA JOGJA</div>
-                    Ngemplak, Sleman, Daerah Istimewa Yogyakarta<br>
-                    Tlp: +62 851 9008 3940<br>
-                    Email: admin@marmevilla.com
+                    Alamat: Serayu, RT 01, Bantul, Bantul, Bantul, Yogyakarta, 55711<br>
+                    Telepon: +62 851 9008 3940<br>
+                    Email: marmevillajogja@gmail.com
                 </td>
             </tr>
         </table>
@@ -191,14 +191,8 @@
             <tr>
                 <td class="col-left"></td>
                 <td class="col-right"></td>
-                <td class="col-left">Paviliun</td>
-                <td class="col-right">: {{ $booking->villa->name ?? 'Villa' }}</td>
-            </tr>
-            <tr>
-                <td class="col-left"></td>
-                <td class="col-right"></td>
                 <td class="col-left">Type</td>
-                <td class="col-right">: Max {{ $booking->villa->max_guests ?? 0 }} Guests</td>
+                <td class="col-right">: {{ $booking->villa->name ?? 'Villa' }}</td>
             </tr>
         </table>
 
@@ -255,10 +249,14 @@
             <span class="total-amount">IDR. {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
             <br>
             @php
-                $paidDate = optional($booking->payments->where('transaction_status', 'settlement')->first())->paid_at;
+                $payment = $booking->payments->where('transaction_status', 'settlement')->first();
+                $paidDate = optional($payment)->paid_at;
                 $formattedPaidDate = $paidDate ? \Carbon\Carbon::parse($paidDate)->format('d/m/Y') : \Carbon\Carbon::now()->format('d/m/Y');
+                
+                $provider = optional($payment)->provider ? ucfirst(optional($payment)->provider) : 'Midtrans';
+                $paymentType = optional($payment)->payment_type ? str_replace('_', ' ', strtoupper(optional($payment)->payment_type)) : 'Transfer';
             @endphp
-            <span class="paid-stamp">Midtrans Transfer {{ $formattedPaidDate }} ( PAID ) :</span>
+            <span class="paid-stamp">{{ $provider }} {{ $paymentType }} {{ $formattedPaidDate }} ( PAID ) :</span>
             <span class="paid-stamp">IDR. {{ number_format($booking->total_amount, 0, ',', '.') }}</span>
         </div>
 

@@ -1,12 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { IconRenderer } from '@/utils/icon-mapper';
 import { Link, usePage } from '@inertiajs/react';
+import axios from 'axios';
 
 export default function AdminHeader({ onMenuToggle }) {
     const { user, unreadNotifications = [], unreadMessages = [], unreadMessagesCount = 0 } = usePage().props.auth;
     const [profileOpen, setProfileOpen] = useState(false);
     const [notifOpen, setNotifOpen] = useState(false);
     const [msgOpen, setMsgOpen] = useState(false);
+    
+    // Live Search States
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [showSearch, setShowSearch] = useState(false);
+    const searchRef = useRef(null);
+
+    // Live Search Effect
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (searchQuery.trim().length > 0) {
+                setIsSearching(true);
+                axios.get(route('admin.reservations.search', { q: searchQuery }))
+                    .then(res => {
+                        setSearchResults(res.data);
+                        setIsSearching(false);
+                    })
+                    .catch(err => {
+                        console.error("Search error", err);
+                        setIsSearching(false);
+                    });
+            } else {
+                setSearchResults([]);
+            }
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchQuery]);
+
+    // Handle click outside to close search dropdown
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (searchRef.current && !searchRef.current.contains(event.target)) {
+                setShowSearch(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [searchRef]);
 
     const formatTime = (dateString) => {
         return new Date(dateString).toLocaleString('id-ID', {
@@ -26,13 +67,55 @@ export default function AdminHeader({ onMenuToggle }) {
                     <IconRenderer name="menu" className="text-[22px]" />
                 </button>
 
-                <div className="relative hidden sm:block">
+                <div className="relative hidden sm:block" ref={searchRef}>
                     <IconRenderer name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
                     <input 
                         className="pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-full text-sm focus:outline-none focus:border-[#D4B47D] focus:ring-1 focus:ring-[#D4B47D] transition-colors w-64" 
                         placeholder="Cari reservasi, tamu..." 
                         type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setShowSearch(true)}
                     />
+                    
+                    {/* Live Search Dropdown */}
+                    {showSearch && searchQuery.trim().length > 0 && (
+                        <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-outline-variant rounded-xl shadow-lg z-50 overflow-hidden">
+                            {isSearching ? (
+                                <div className="p-4 text-center text-sm text-on-surface-variant">Mencari...</div>
+                            ) : searchResults.length > 0 ? (
+                                <div className="max-h-96 overflow-y-auto">
+                                    {searchResults.map(result => (
+                                        <Link
+                                            key={result.id}
+                                            href={route('admin.reservations.show', result.id)}
+                                            className="block p-3 hover:bg-surface-container-lowest border-b border-outline-variant/30 last:border-0"
+                                            onClick={() => setShowSearch(false)}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <span className="font-semibold text-sm text-primary">{result.booking_code}</span>
+                                                <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+                                                    result.booking_status === 'confirmed' ? 'bg-success/10 text-success' :
+                                                    result.booking_status === 'completed' ? 'bg-blue-100 text-blue-700' :
+                                                    result.booking_status === 'cancelled' ? 'bg-error/10 text-error' :
+                                                    'bg-surface-container-highest text-on-surface'
+                                                }`}>
+                                                    {result.booking_status.charAt(0).toUpperCase() + result.booking_status.slice(1)}
+                                                </span>
+                                            </div>
+                                            <div className="text-sm font-medium text-on-surface mb-0.5">{result.guest_name}</div>
+                                            <div className="text-xs text-on-surface-variant flex items-center gap-1">
+                                                <IconRenderer name="home" className="text-[12px]" />
+                                                <span>{result.villa?.name}</span>
+                                            </div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="p-4 text-center text-sm text-on-surface-variant">Tidak ada hasil ditemukan.</div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
 

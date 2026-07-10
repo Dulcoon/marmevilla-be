@@ -55,6 +55,7 @@ Route::middleware('auth')->group(function () {
 
         // Reservation Routes
         Route::get('reservations', [\App\Http\Controllers\BookingController::class, 'index'])->name('reservations.index');
+        Route::get('reservations/search', [\App\Http\Controllers\BookingController::class, 'search'])->name('reservations.search');
         Route::get('reservations/{booking}', [\App\Http\Controllers\BookingController::class, 'show'])->name('reservations.show');
         Route::patch('reservations/{booking}/status', [\App\Http\Controllers\BookingController::class, 'updateStatus'])->name('reservations.update-status');
         Route::patch('reservations/{booking}/dates', [\App\Http\Controllers\BookingController::class, 'updateDates'])->name('reservations.update-dates');

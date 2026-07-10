@@ -35,7 +35,7 @@
                 </div>
                 <div class="detail-row">
                     <span class="label">Check-in</span>
-                    <span class="value">{{ \Carbon\Carbon::parse($booking->check_in)->translatedFormat('d F Y') }} <br><span style="font-size: 12px; color: #70665E; font-weight: normal;">Mulai 14:00 WIB</span></span>
+                    <span class="value">{{ \Carbon\Carbon::parse($booking->check_in)->translatedFormat('d F Y') }} <br><span style="font-size: 12px; color: #70665E; font-weight: normal;">Mulai 15:00 WIB</span></span>
                 </div>
                 <div class="detail-row">
                     <span class="label">Check-out</span>

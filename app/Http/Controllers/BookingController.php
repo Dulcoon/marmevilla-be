@@ -18,6 +18,27 @@ use Carbon\CarbonPeriod;
 class BookingController extends Controller
 {
     /**
+     * Search bookings for Admin Header live search.
+     */
+    public function search(Request $request)
+    {
+        if (!$request->filled('q')) {
+            return response()->json([]);
+        }
+
+        $query = $request->q;
+        $bookings = Booking::with('villa:id,name')
+            ->where('booking_code', 'like', "%{$query}%")
+            ->orWhere('guest_name', 'like', "%{$query}%")
+            ->orWhere('guest_email', 'like', "%{$query}%")
+            ->orderBy('created_at', 'desc')
+            ->limit(5)
+            ->get(['id', 'booking_code', 'guest_name', 'guest_email', 'booking_status', 'villa_id', 'check_in', 'check_out']);
+
+        return response()->json($bookings);
+    }
+
+    /**
      * Display a listing of all bookings.
      */
     public function index(Request $request)
