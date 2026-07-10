@@ -14,7 +14,7 @@ class VillaController extends Controller
      */
     public function index()
     {
-        $villas = Villa::with('images')->latest()->paginate(10);
+        $villas = Villa::with('images')->orderBy('sort_order', 'asc')->orderBy('created_at', 'desc')->paginate(10);
         
         return Inertia::render('Admin/Villa/Index', [
             'villas' => $villas
@@ -219,7 +219,21 @@ class VillaController extends Controller
     public function destroy(Villa $villa)
     {
         $villa->delete();
-
+ 
         return redirect()->route('admin.villas.index')->with('success', 'Villa berhasil dihapus.');
+    }
+
+    public function reorder(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|exists:villas,id',
+        ]);
+
+        foreach ($request->ids as $index => $id) {
+            Villa::where('id', $id)->update(['sort_order' => $index + 1]);
+        }
+
+        return redirect()->route('admin.villas.index')->with('success', 'Urutan villa berhasil diperbarui.');
     }
 }

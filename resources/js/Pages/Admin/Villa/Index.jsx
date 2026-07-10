@@ -166,6 +166,10 @@ export default function Index({ villas }) {
     };
 
     const [villaToDelete, setVillaToDelete] = useState(null);
+    const [isReordering, setIsReordering] = useState(false);
+    const [tempVillas, setTempVillas] = useState([]);
+    const [draggedIndex, setDraggedIndex] = useState(null);
+    const [isSavingOrder, setIsSavingOrder] = useState(false);
 
     const deleteVilla = () => {
         if (!villaToDelete) return;
@@ -174,6 +178,54 @@ export default function Index({ villas }) {
             onSuccess: () => setVillaToDelete(null),
             onError: () => setVillaToDelete(null),
         });
+    };
+
+    const startReordering = () => {
+        setTempVillas([...villas.data]);
+        setIsReordering(true);
+    };
+
+    const cancelReordering = () => {
+        setIsReordering(false);
+        setTempVillas([]);
+    };
+
+    const saveOrder = () => {
+        setIsSavingOrder(true);
+        router.post(route('admin.villas.reorder'), {
+            ids: tempVillas.map(v => v.id)
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsReordering(false);
+                setIsSavingOrder(false);
+                setTempVillas([]);
+            },
+            onError: () => {
+                setIsSavingOrder(false);
+            }
+        });
+    };
+
+    const handleDragStart = (e, index) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e, index) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === index) return;
+
+        const reordered = [...tempVillas];
+        const [draggedItem] = reordered.splice(draggedIndex, 1);
+        reordered.splice(index, 0, draggedItem);
+
+        setDraggedIndex(index);
+        setTempVillas(reordered);
+    };
+
+    const handleDragEnd = () => {
+        setDraggedIndex(null);
     };
 
     return (
@@ -189,19 +241,110 @@ export default function Index({ villas }) {
                         <h2 className="font-headline-xl text-3xl sm:text-headline-xl text-primary mb-1 sm:mb-2 font-bold">Manajemen Villa</h2>
                         <p className="text-on-surface-variant text-base sm:text-body-md">Kelola daftar villa, fasilitas, dan harga dasar.</p>
                     </div>
-                    <Link 
-                        href={route('admin.villas.create')}
-                        className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
-                    >
-                        <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
-                        Tambah Villa
-                    </Link>
+                    {isReordering ? (
+                        <div className="w-full sm:w-auto flex items-center gap-3">
+                            <button
+                                type="button"
+                                disabled={isSavingOrder}
+                                onClick={cancelReordering}
+                                className="flex-1 sm:flex-initial bg-surface-container-low text-on-surface-variant border border-outline-variant/40 px-6 py-3 sm:py-2.5 rounded-lg font-semibold text-sm hover:bg-surface-variant transition-colors flex items-center justify-center gap-2"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                type="button"
+                                disabled={isSavingOrder}
+                                onClick={saveOrder}
+                                className="flex-1 sm:flex-initial bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow disabled:opacity-50 min-w-[140px]"
+                            >
+                                {isSavingOrder ? (
+                                    <>
+                                        <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        Menyimpan...
+                                    </>
+                                ) : (
+                                    <>
+                                        <IconRenderer name="save" className="text-[20px] sm:text-[18px]" />
+                                        Simpan Urutan
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="w-full sm:w-auto flex items-center gap-3">
+                            {villas.data.length > 1 && (
+                                <button
+                                    type="button"
+                                    onClick={startReordering}
+                                    className="flex-1 sm:flex-initial bg-white border border-outline-variant text-on-surface px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2 shadow-sm"
+                                >
+                                    <IconRenderer name="sort" className="text-[20px] sm:text-[18px]" />
+                                    Atur Urutan
+                                </button>
+                            )}
+                            <Link 
+                                href={route('admin.villas.create')}
+                                className="flex-1 sm:flex-initial bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
+                            >
+                                <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
+                                Tambah Villa
+                            </Link>
+                        </div>
+                    )}
                 </div>
 
                 {/* Villas List Container */}
                 {villas.data.length === 0 ? (
                     <div className="bg-white rounded-xl ghost-border ambient-shadow p-8 text-center text-on-surface-variant text-sm">
                         Belum ada data villa.
+                    </div>
+                ) : isReordering ? (
+                    <div className="max-w-2xl mx-auto w-full bg-white rounded-xl ghost-border ambient-shadow p-6 flex flex-col gap-4">
+                        <div className="bg-[#F9F7F2] p-4 rounded-xl border border-[#f0e8d9] flex items-start gap-3">
+                            <IconRenderer name="info" className="text-gold shrink-0 text-[20px] mt-0.5" />
+                            <p className="text-xs text-[#70665E] font-medium leading-relaxed font-sans">
+                                Seret dan taruh (*drag & drop*) villa di bawah ini untuk merapikan urutan tampilannya di situs tamu. Urutan pertama (paling atas) akan muncul sebagai villa utama paling awal.
+                            </p>
+                        </div>
+                        
+                        <div className="flex flex-col gap-3">
+                            {tempVillas.map((villa, idx) => (
+                                <div
+                                    key={villa.id}
+                                    draggable
+                                    onDragStart={(e) => handleDragStart(e, idx)}
+                                    onDragOver={(e) => handleDragOver(e, idx)}
+                                    onDragEnd={handleDragEnd}
+                                    className={`flex items-center gap-4 p-4 bg-white rounded-xl border transition-all cursor-move ${
+                                        draggedIndex === idx 
+                                            ? 'border-gold bg-gold/5 opacity-50 scale-[0.99] shadow-sm' 
+                                            : 'border-outline-variant/30 hover:border-gold/30 hover:bg-[#F9F7F2]/10'
+                                    }`}
+                                >
+                                    {/* Drag Handle */}
+                                    <div className="text-on-surface-variant/40 hover:text-gold transition-colors p-1.5 shrink-0">
+                                        <IconRenderer name="drag_indicator" className="text-[22px]" />
+                                    </div>
+
+                                    {/* Image Thumbnail */}
+                                    <div className="w-20 h-14 rounded-lg bg-surface-variant overflow-hidden shrink-0 border border-outline-variant/30">
+                                        {villa.images && villa.images.length > 0 ? (
+                                            <img src={villa.images[0].image_url} alt={villa.name} className="w-full h-full object-cover" />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <IconRenderer name="image" className="text-on-surface-variant/50 text-xl" />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Villa Name */}
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="text-base font-bold text-primary truncate leading-snug">{villa.name}</h4>
+                                        <p className="text-xs text-on-surface-variant font-medium mt-0.5">Posisi ke-{idx + 1}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

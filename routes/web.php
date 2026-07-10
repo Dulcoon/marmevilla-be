@@ -24,6 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [\App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
         Route::resource('villas', \App\Http\Controllers\VillaController::class);
+        Route::post('villas/reorder', [\App\Http\Controllers\VillaController::class, 'reorder'])->name('villas.reorder');
         
         // Villa Images Routes
         Route::delete('villas/{villa}/images/{image}', [\App\Http\Controllers\VillaImageController::class, 'destroy'])->name('villas.images.destroy');

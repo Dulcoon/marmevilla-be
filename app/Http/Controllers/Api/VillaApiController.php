@@ -39,7 +39,7 @@ class VillaApiController extends Controller
 
     public function index()
     {
-        $villas = Villa::with(['images', 'facilities'])->get();
+        $villas = Villa::with(['images', 'facilities'])->orderBy('sort_order', 'asc')->get();
         $this->attachDisplayPrice($villas);
         return response()->json([
             'status' => 'success',
@@ -53,6 +53,7 @@ class VillaApiController extends Controller
             ->with(['images' => function ($q) {
                 $q->select('id', 'villa_id', 'image_url', 'is_primary');
             }])
+            ->orderBy('sort_order', 'asc')
             ->get();
 
         $this->attachDisplayPrice($villas);

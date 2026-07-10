@@ -10,6 +10,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Booking;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BookingConfirmed extends Mailable
 {
@@ -52,6 +53,11 @@ class BookingConfirmed extends Mailable
      */
     public function attachments(): array
     {
-        return [];
+        $pdf = Pdf::loadView('pdf.invoice', ['booking' => $this->booking]);
+        
+        return [
+            Attachment::fromData(fn () => $pdf->output(), 'Invoice_MarmeVilla_' . $this->booking->booking_code . '.pdf')
+                    ->withMime('application/pdf'),
+        ];
     }
 }

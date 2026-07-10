@@ -18,7 +18,19 @@ class Villa extends Model
         'features_en' => 'array',
         'weekend_enabled' => 'boolean',
         'album_order' => 'array',
+        'sort_order' => 'integer',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($villa) {
+            if (is_null($villa->sort_order)) {
+                $villa->sort_order = static::max('sort_order') + 1;
+            }
+        });
+    }
 
     public function images()
     {
