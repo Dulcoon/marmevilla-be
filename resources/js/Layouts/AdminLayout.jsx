@@ -25,7 +25,7 @@ export default function AdminLayout({ children }) {
                 />
 
                 {/* Sub-view Content slot */}
-                <main className="flex-1">
+                <main className="flex-1 min-w-0">
                     {children}
                 </main>
             </div>

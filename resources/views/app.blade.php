@@ -6,6 +6,11 @@
 
         <title inertia>{{ config('app.name', 'Laravel') }}</title>
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/webp" href="{{ asset('images/logo-marme.webp') }}">
+        <link rel="shortcut icon" href="{{ asset('images/logo-marme.webp') }}" type="image/webp">
+        <link rel="apple-touch-icon" href="{{ asset('images/logo-marme.webp') }}">
+
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

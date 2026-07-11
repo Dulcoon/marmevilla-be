@@ -100,8 +100,9 @@ export default function Index({ roles }) {
                         </div>
                     </div>
 
-                    {/* Table View */}
-                    <div className="overflow-x-auto">
+                    {/* Responsive Role List */}
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="border-b border-outline-variant/30 bg-surface-container-low/50">
@@ -191,6 +192,88 @@ export default function Index({ roles }) {
                                 })}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Cards View */}
+                    <div className="block md:hidden divide-y divide-outline-variant/20">
+                        {filtered.length === 0 ? (
+                            <div className="p-8 text-center text-on-surface-variant">
+                                {search ? 'Tidak ada role yang cocok dengan pencarian.' : 'Belum ada role.'}
+                            </div>
+                        ) : filtered.map(role => {
+                            const isSystemRole = ['superadmin', 'admin'].includes(role.name);
+                            return (
+                                <div key={role.id} className="p-4 flex flex-col gap-4 hover:bg-surface-container-lowest transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col gap-1">
+                                            <span className="font-bold text-primary capitalize flex items-center gap-1.5 text-base">
+                                                <IconRenderer
+                                                    name={role.name === 'superadmin' ? 'shield_person' : role.name === 'admin' ? 'admin_panel_settings' : 'shield'}
+                                                    className={`text-[20px] ${role.name === 'superadmin' ? 'text-[#F59E0B]' : role.name === 'admin' ? 'text-[#2E7D32]' : 'text-on-surface-variant/70'}`}
+                                                    style={{ fontVariationSettings: "'FILL' 1" }}
+                                                />
+                                                {role.name}
+                                            </span>
+                                            {isSystemRole && (
+                                                <span className="text-[9px] bg-secondary-container text-on-secondary-container px-2 py-0.5 rounded-full font-bold w-max uppercase tracking-wider">
+                                                    Sistem Bawaan
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex gap-1 bg-surface-container-low rounded-lg p-0.5 border border-outline-variant/30">
+                                            {role.name !== 'superadmin' ? (
+                                                <a href={route('admin.manage-roles.edit', role.id)}
+                                                    className="text-on-surface-variant hover:text-primary p-2 rounded-md hover:bg-white transition-colors"
+                                                    title="Edit">
+                                                    <IconRenderer name="edit" className="text-[18px]" />
+                                                </a>
+                                            ) : (
+                                                <span className="text-on-surface-variant/30 p-2" title="Superadmin tidak dapat diubah">
+                                                    <IconRenderer name="lock" className="text-[18px]" />
+                                                </span>
+                                            )}
+                                            {!isSystemRole && role.users_count === 0 && (
+                                                <button
+                                                    onClick={() => setDeleteTarget(role)}
+                                                    className="text-error/70 hover:text-error p-2 rounded-md hover:bg-error-container/20 transition-colors"
+                                                    title="Hapus">
+                                                    <IconRenderer name="delete" className="text-[18px]" />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Stats */}
+                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-on-surface bg-surface-container-lowest w-max px-2.5 py-1 rounded-lg border border-outline-variant/20">
+                                        <IconRenderer name="group" className="text-[16px] text-on-surface-variant/70" />
+                                        <span>{role.users_count} Staf</span>
+                                    </div>
+
+                                    {/* Permissions */}
+                                    <div className="flex flex-col gap-2">
+                                        <span className="text-[10px] font-bold text-on-surface-variant/60 uppercase tracking-wider">Hak Akses:</span>
+                                        {role.name === 'superadmin' ? (
+                                            <div className="flex items-center gap-1.5 text-xs text-[#F59E0B] font-semibold bg-[#FFF8E1] px-2.5 py-1 rounded-lg w-max">
+                                                <IconRenderer name="star" className="text-[14px]" style={{ fontVariationSettings: "'FILL' 1" }} />
+                                                Akses Penuh Tanpa Batasan (Semua Permission)
+                                            </div>
+                                        ) : role.permissions.length === 0 ? (
+                                            <span className="text-on-surface-variant/40 text-xs italic">Tidak ada permission aktif</span>
+                                        ) : (
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {role.permissions.map(perm => (
+                                                    <span key={perm} className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container text-on-surface-variant text-[11px] font-medium border border-outline-variant/30">
+                                                        {perm}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
                 </div>
             </div>
