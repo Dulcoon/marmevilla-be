@@ -4,8 +4,10 @@ import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function Login({ status, canResetPassword }) {
+    const [showPassword, setShowPassword] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
         password: '',
@@ -75,25 +77,26 @@ export default function Login({ status, canResetPassword }) {
                 <div>
                     <div className="flex justify-between items-center">
                         <InputLabel htmlFor="password" value="Kata Sandi" className="text-on-surface-variant text-xs font-semibold uppercase tracking-wider" />
-                        {canResetPassword && (
-                            <Link
-                                href={route('password.request')}
-                                className="text-xs text-[#D4B47D] hover:underline focus:outline-none"
-                            >
-                                Lupa kata sandi?
-                            </Link>
-                        )}
                     </div>
-                    <input
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1.5 block w-full px-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-[#D4B47D] focus:ring-1 focus:ring-[#D4B47D] transition-colors"
-                        autoComplete="current-password"
-                        required
-                        onChange={(e) => setData('password', e.target.value)}
-                    />
+                    <div className="relative mt-1.5">
+                        <input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            name="password"
+                            value={data.password}
+                            className="block w-full pl-4 pr-11 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-sm text-on-surface focus:outline-none focus:border-[#D4B47D] focus:ring-1 focus:ring-[#D4B47D] transition-colors"
+                            autoComplete="current-password"
+                            required
+                            onChange={(e) => setData('password', e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface transition-colors flex items-center"
+                        >
+                            <IconRenderer name={showPassword ? 'visibility_off' : 'visibility'} className="text-[20px]" />
+                        </button>
+                    </div>
                     <InputError message={errors.password} className="mt-1.5 text-xs text-error font-medium" />
                 </div>
 

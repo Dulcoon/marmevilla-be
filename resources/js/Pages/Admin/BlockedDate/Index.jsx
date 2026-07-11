@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, startOfToday } from "date-fns";
 import { id } from "date-fns/locale";
+import { usePermission } from '@/hooks/usePermission';
 
 const formatDate = (date) => {
     if (!date) return '';
@@ -17,6 +18,8 @@ const formatDate = (date) => {
 };
 
 export default function Index({ villas, selectedVilla, auth }) {
+    const { can } = usePermission();
+    const canManageBlockedDates = can('manage blocked-dates');
     // Select Villa Dropdown
     const handleVillaChange = (e) => {
         router.get(route('admin.blocked-dates.index'), { villa_id: e.target.value }, { preserveState: true });
@@ -110,71 +113,78 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <p className="font-label-md text-xs text-on-surface-variant font-normal">Tanggal yang diblokir tidak bisa dipesan tamu.</p>
                                     </div>
                                 </div>
-
-                                <form onSubmit={submitBlockDate} className="flex flex-col gap-5 flex-1">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface uppercase">Rentang Tanggal</label>
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <button type="button" className="w-full flex items-center gap-3 p-3 bg-[#F9F7F2] border border-outline-variant/30 rounded-xl outline-none focus:border-[#D4B47D] hover:bg-black/5 text-left transition-colors">
-                                                    <IconRenderer name="calendar_month" className="text-[20px] text-on-surface-variant" />
-                                                    <span className="flex-1 font-body-md text-on-surface text-sm">
-                                                        {dateRange?.from ? (
-                                                            dateRange.to ? (
-                                                                <>{format(dateRange.from, "d MMM yyyy", { locale: id })} - {format(dateRange.to, "d MMM yyyy", { locale: id })}</>
+                                {!canManageBlockedDates ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-surface-container-low/30 rounded-xl border border-dashed border-outline-variant">
+                                        <IconRenderer name="lock" className="text-on-surface-variant/60 text-3xl mb-2" />
+                                        <p className="text-sm font-semibold text-primary">Akses Terbatas</p>
+                                        <p className="text-xs text-on-surface-variant mt-1">Anda tidak memiliki izin untuk mengelola blokir tanggal.</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={submitBlockDate} className="flex flex-col gap-5 flex-1">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface uppercase">Rentang Tanggal</label>
+                                            <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <button type="button" className="w-full flex items-center gap-3 p-3 bg-[#F9F7F2] border border-outline-variant/30 rounded-xl outline-none focus:border-[#D4B47D] hover:bg-black/5 text-left transition-colors">
+                                                        <IconRenderer name="calendar_month" className="text-[20px] text-on-surface-variant" />
+                                                        <span className="flex-1 font-body-md text-on-surface text-sm">
+                                                            {dateRange?.from ? (
+                                                                dateRange.to ? (
+                                                                    <>{format(dateRange.from, "d MMM yyyy", { locale: id })} - {format(dateRange.to, "d MMM yyyy", { locale: id })}</>
+                                                                ) : (
+                                                                    format(dateRange.from, "d MMM yyyy", { locale: id })
+                                                                )
                                                             ) : (
-                                                                format(dateRange.from, "d MMM yyyy", { locale: id })
-                                                            )
-                                                        ) : (
-                                                            <span className="text-on-surface-variant/50">Pilih tanggal...</span>
-                                                        )}
-                                                    </span>
-                                                </button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-auto p-0 rounded-2xl bg-surface-container-lowest border border-[#E6E2D3] shadow-lg z-50 overflow-x-auto flex justify-center" align="start">
-                                                <Calendar
-                                                    mode="range"
-                                                    defaultMonth={dateRange?.from}
-                                                    selected={dateRange}
-                                                    onSelect={setDateRange}
-                                                    numberOfMonths={1}
-                                                    disabled={[
-                                                        { before: startOfToday() }
-                                                    ]}
-                                                    className="bg-white rounded-2xl"
-                                                />
-                                            </PopoverContent>
-                                        </Popover>
-                                        {errors.start_date && <div className="text-red-500 text-xs mt-1">{errors.start_date}</div>}
-                                        {errors.end_date && <div className="text-red-500 text-xs mt-1">{errors.end_date}</div>}
-                                    </div>
+                                                                <span className="text-on-surface-variant/50">Pilih tanggal...</span>
+                                                            )}
+                                                        </span>
+                                                    </button>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0 rounded-2xl bg-surface-container-lowest border border-[#E6E2D3] shadow-lg z-50 overflow-x-auto flex justify-center" align="start">
+                                                    <Calendar
+                                                        mode="range"
+                                                        defaultMonth={dateRange?.from}
+                                                        selected={dateRange}
+                                                        onSelect={setDateRange}
+                                                        numberOfMonths={1}
+                                                        disabled={[
+                                                            { before: startOfToday() }
+                                                        ]}
+                                                        className="bg-white rounded-2xl"
+                                                    />
+                                                </PopoverContent>
+                                            </Popover>
+                                            {errors.start_date && <div className="text-red-500 text-xs mt-1">{errors.start_date}</div>}
+                                            {errors.end_date && <div className="text-red-500 text-xs mt-1">{errors.end_date}</div>}
+                                        </div>
 
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface">Alasan Blokir</label>
-                                        <input 
-                                            type="text" 
-                                            className="bg-[#F9F7F2] border border-outline-variant/40 focus:border-[#D4B47D] focus:ring-0 px-4 py-3 font-body-md rounded-xl transition-colors text-sm outline-none" 
-                                            placeholder="misal: Perbaikan AC / Booking Internal"
-                                            value={data.reason}
-                                            onChange={e => setData('reason', e.target.value)}
-                                            required
-                                        />
-                                        {errors.reason && <div className="text-red-500 text-xs mt-1">{errors.reason}</div>}
-                                    </div>
+                                        <div className="flex flex-col gap-2">
+                                            <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface">Alasan Blokir</label>
+                                            <input 
+                                                type="text" 
+                                                className="bg-[#F9F7F2] border border-outline-variant/40 focus:border-[#D4B47D] focus:ring-0 px-4 py-3 font-body-md rounded-xl transition-colors text-sm outline-none" 
+                                                placeholder="misal: Perbaikan AC / Booking Internal"
+                                                value={data.reason}
+                                                onChange={e => setData('reason', e.target.value)}
+                                                required
+                                            />
+                                            {errors.reason && <div className="text-red-500 text-xs mt-1">{errors.reason}</div>}
+                                        </div>
 
-                                    <div className="mt-auto pt-6 flex justify-end">
-                                        <button 
-                                            type="button" 
-                                            onClick={() => {
-                                                reset();
-                                                setDateRange({ from: undefined, to: undefined });
-                                            }} 
-                                            className="text-primary font-semibold text-sm px-4 py-2 hover:bg-surface-variant rounded-md transition-colors mr-2">
-                                            Bersihkan
-                                        </button>
-                                        <button type="submit" disabled={processing} className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Terapkan Blokir</button>
-                                    </div>
-                                </form>
+                                        <div className="mt-auto pt-6 flex justify-end">
+                                            <button 
+                                                type="button" 
+                                                onClick={() => {
+                                                    reset();
+                                                    setDateRange({ from: undefined, to: undefined });
+                                                }} 
+                                                className="text-primary font-semibold text-sm px-4 py-2 hover:bg-surface-variant rounded-md transition-colors mr-2">
+                                                Bersihkan
+                                            </button>
+                                            <button type="submit" disabled={processing} className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-6 py-2.5 rounded-xl transition-all active:scale-[0.98] disabled:opacity-50">Terapkan Blokir</button>
+                                        </div>
+                                    </form>
+                                )}
                             </div>
                         </div>
 
@@ -204,13 +214,15 @@ export default function Index({ villas, selectedVilla, auth }) {
                                                             if (start <= today && end >= today) return <span className="px-2.5 py-0.5 bg-[#D1E7DD] text-[#0F5132] text-[10px] font-bold rounded-full tracking-wider uppercase">Active</span>;
                                                             return <span className="px-2.5 py-0.5 bg-[#FDECC8] text-[#9A6B22] text-[10px] font-bold rounded-full tracking-wider uppercase">Upcoming</span>;
                                                         })()}
-                                                        <button 
-                                                            onClick={() => deleteBlockedDate(rule.id)}
-                                                            className="text-outline-variant hover:text-error transition-colors p-1 rounded-full hover:bg-red-50 flex items-center justify-center"
-                                                            title="Hapus Blokir"
-                                                        >
-                                                            <IconRenderer name="delete" className="text-[20px]" />
-                                                        </button>
+                                                        {canManageBlockedDates && (
+                                                            <button 
+                                                                onClick={() => deleteBlockedDate(rule.id)}
+                                                                className="text-outline-variant hover:text-error transition-colors p-1 rounded-full hover:bg-red-50 flex items-center justify-center"
+                                                                title="Hapus Blokir"
+                                                            >
+                                                                <IconRenderer name="delete" className="text-[20px]" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 {/* Details row */}

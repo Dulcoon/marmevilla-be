@@ -250,7 +250,14 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
     );
 }
 
+import { usePermission } from '@/hooks/usePermission';
+
 export default function Index({ vouchers, stats }) {
+    const { can } = usePermission();
+    const canCreate = can('create vouchers');
+    const canEdit = can('edit vouchers');
+    const canDelete = can('delete vouchers');
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [voucherToEdit, setVoucherToEdit] = useState(null);
 
@@ -312,13 +319,15 @@ export default function Index({ vouchers, stats }) {
                         <h2 className="font-headline-xl text-3xl sm:text-headline-xl text-primary mb-1 sm:mb-2 font-bold">Voucher Management</h2>
                         <p className="text-on-surface-variant text-base sm:text-body-md">Kelola diskon promosi untuk tamu.</p>
                     </div>
-                    <button 
-                        onClick={openCreateModal}
-                        className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
-                    >
-                        <IconRenderer name="add" className="text-[18px]" />
-                        Buat Voucher Baru
-                    </button>
+                    {canCreate && (
+                        <button 
+                            onClick={openCreateModal}
+                            className="w-full sm:w-auto bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
+                        >
+                            <IconRenderer name="add" className="text-[18px]" />
+                            Buat Voucher Baru
+                        </button>
+                    )}
                 </div>
 
                 {/* Dashboard / Bento Grid */}
@@ -409,12 +418,16 @@ export default function Index({ vouchers, stats }) {
                                                 </td>
                                                 <td className="p-4 text-center">
                                                     <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button onClick={() => openEditModal(voucher)} className="text-on-surface-variant hover:text-primary p-1 rounded hover:bg-surface-container-low" title="Edit">
-                                                            <IconRenderer name="edit" className="text-[20px]" />
-                                                        </button>
-                                                        <button onClick={() => handleDelete(voucher)} className="text-error/70 hover:text-error p-1 rounded hover:bg-error/10" title="Hapus">
-                                                            <IconRenderer name="delete" className="text-[20px]" />
-                                                        </button>
+                                                        {canEdit && (
+                                                            <button onClick={() => openEditModal(voucher)} className="text-on-surface-variant hover:text-primary p-1 rounded hover:bg-surface-container-low" title="Edit">
+                                                                <IconRenderer name="edit" className="text-[20px]" />
+                                                            </button>
+                                                        )}
+                                                        {canDelete && (
+                                                            <button onClick={() => handleDelete(voucher)} className="text-error/70 hover:text-error p-1 rounded hover:bg-error/10" title="Hapus">
+                                                                <IconRenderer name="delete" className="text-[20px]" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 </td>
                                             </tr>
@@ -435,12 +448,16 @@ export default function Index({ vouchers, stats }) {
                                             
                                             {/* Minimalist action menu for mobile */}
                                             <div className="flex gap-1 -mr-2 -mt-2">
-                                                <button onClick={() => openEditModal(voucher)} className="p-2 text-on-surface-variant hover:text-primary">
-                                                    <IconRenderer name="edit" className="text-[20px]" />
-                                                </button>
-                                                <button onClick={() => handleDelete(voucher)} className="p-2 text-error/80 hover:text-error">
-                                                    <IconRenderer name="delete" className="text-[20px]" />
-                                                </button>
+                                                {canEdit && (
+                                                    <button onClick={() => openEditModal(voucher)} className="p-2 text-on-surface-variant hover:text-primary">
+                                                        <IconRenderer name="edit" className="text-[20px]" />
+                                                    </button>
+                                                )}
+                                                {canDelete && (
+                                                    <button onClick={() => handleDelete(voucher)} className="p-2 text-error/80 hover:text-error">
+                                                        <IconRenderer name="delete" className="text-[20px]" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                         

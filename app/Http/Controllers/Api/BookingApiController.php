@@ -65,7 +65,7 @@ class BookingApiController extends Controller
         }
 
         $extraGuests = max(0, $guests - $villa->capacity);
-        $extraChargeTotal = $extraGuests * $villa->extra_guest_fee * $period->count();
+        $extraChargeTotal = $extraGuests * $villa->extra_guest_fee;
 
         return [
             'base_price_total' => $basePriceTotal,

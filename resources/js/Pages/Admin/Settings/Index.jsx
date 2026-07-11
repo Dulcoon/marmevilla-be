@@ -2,8 +2,11 @@ import { useForm, Head } from '@inertiajs/react';
 import { IconRenderer } from '@/utils/icon-mapper';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { useState } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 
 export default function Index({ settings, flash }) {
+    const { can } = usePermission();
+    const canEditSettings = can('edit settings');
     const { data, setData, post, processing, errors } = useForm({
         active_payment_gateway: settings?.active_payment_gateway || 'midtrans',
         midtrans_server_key: settings?.midtrans_server_key || '',
@@ -119,8 +122,10 @@ export default function Index({ settings, flash }) {
                                     <div className="grid sm:grid-cols-2 gap-4">
                                         {/* Midtrans Card */}
                                         <div 
-                                            onClick={() => setData('active_payment_gateway', 'midtrans')}
-                                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col gap-2 relative ${
+                                            onClick={() => canEditSettings && setData('active_payment_gateway', 'midtrans')}
+                                            className={`p-4 rounded-xl border-2 transition-all flex flex-col gap-2 relative ${
+                                                canEditSettings ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'
+                                            } ${
                                                 data.active_payment_gateway === 'midtrans'
                                                     ? 'border-secondary bg-secondary/5 shadow-sm'
                                                     : 'border-outline-variant/50 hover:border-outline-variant'
@@ -137,8 +142,10 @@ export default function Index({ settings, flash }) {
 
                                         {/* Doku Card */}
                                         <div 
-                                            onClick={() => setData('active_payment_gateway', 'doku')}
-                                            className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex flex-col gap-2 relative ${
+                                            onClick={() => canEditSettings && setData('active_payment_gateway', 'doku')}
+                                            className={`p-4 rounded-xl border-2 transition-all flex flex-col gap-2 relative ${
+                                                canEditSettings ? 'cursor-pointer' : 'cursor-not-allowed opacity-80'
+                                            } ${
                                                 data.active_payment_gateway === 'doku'
                                                     ? 'border-[#DE2117] bg-[#DE2117]/5 shadow-sm'
                                                     : 'border-outline-variant/50 hover:border-outline-variant'
@@ -174,6 +181,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('midtrans_server_key', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-secondary focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="SB-Mid-server-xxxx"
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.midtrans_server_key && <p className="text-error text-xs mt-1">{errors.midtrans_server_key}</p>}
                                             </div>
@@ -185,6 +193,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('midtrans_client_key', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-secondary focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="SB-Mid-client-xxxx"
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.midtrans_client_key && <p className="text-error text-xs mt-1">{errors.midtrans_client_key}</p>}
                                             </div>
@@ -197,6 +206,7 @@ export default function Index({ settings, flash }) {
                                                     value={data.midtrans_is_production}
                                                     onChange={(e) => setData('midtrans_is_production', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-secondary focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors text-on-surface"
+                                                    disabled={!canEditSettings}
                                                 >
                                                     <option value="false">Sandbox / Testing</option>
                                                     <option value="true">Production / Live</option>
@@ -211,6 +221,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('midtrans_expiry_minutes', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-secondary focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="Cth: 1440"
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.midtrans_expiry_minutes && <p className="text-error text-xs mt-1">{errors.midtrans_expiry_minutes}</p>}
                                             </div>
@@ -232,6 +243,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('doku_client_id', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#DE2117] focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="Cth: 28479..."
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.doku_client_id && <p className="text-error text-xs mt-1">{errors.doku_client_id}</p>}
                                             </div>
@@ -243,6 +255,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('doku_secret_key', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#DE2117] focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="SK-xxxx"
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.doku_secret_key && <p className="text-error text-xs mt-1">{errors.doku_secret_key}</p>}
                                             </div>
@@ -255,6 +268,7 @@ export default function Index({ settings, flash }) {
                                                     value={data.doku_is_production}
                                                     onChange={(e) => setData('doku_is_production', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#DE2117] focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors text-on-surface"
+                                                    disabled={!canEditSettings}
                                                 >
                                                     <option value="false">Sandbox / Testing</option>
                                                     <option value="true">Production / Live</option>
@@ -269,6 +283,7 @@ export default function Index({ settings, flash }) {
                                                     onChange={(e) => setData('doku_expiry_minutes', e.target.value)}
                                                     className="w-full bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#DE2117] focus:ring-0 px-3 py-2 text-sm font-body-md rounded-t-md transition-colors"
                                                     placeholder="Cth: 60"
+                                                    disabled={!canEditSettings}
                                                 />
                                                 {errors.doku_expiry_minutes && <p className="text-error text-xs mt-1">{errors.doku_expiry_minutes}</p>}
                                             </div>
@@ -306,13 +321,15 @@ export default function Index({ settings, flash }) {
                                                         {emailsList.map((email, idx) => (
                                                             <div key={idx} className="flex items-center justify-between bg-white border border-outline-variant/50 rounded-lg p-2.5 px-3">
                                                                 <span className="text-sm font-body-md text-primary">{email}</span>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => handleRemoveEmail(idx)}
-                                                                    className="text-error/70 hover:text-error hover:bg-error/10 p-1 rounded-md transition-colors"
-                                                                >
-                                                                    <IconRenderer name="delete" className="text-[18px]" />
-                                                                </button>
+                                                                {canEditSettings && (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleRemoveEmail(idx)}
+                                                                        className="text-error/70 hover:text-error hover:bg-error/10 p-1 rounded-md transition-colors"
+                                                                    >
+                                                                        <IconRenderer name="delete" className="text-[18px]" />
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         ))}
                                                     </div>
@@ -322,30 +339,32 @@ export default function Index({ settings, flash }) {
                                                     </div>
                                                 )}
 
-                                                <div className="flex gap-2 mt-2">
-                                                    <input
-                                                        type="email"
-                                                        value={newEmail}
-                                                        onChange={(e) => setNewEmail(e.target.value)}
-                                                        onKeyDown={(e) => {
-                                                            if (e.key === 'Enter') {
-                                                                e.preventDefault();
-                                                                handleAddEmail();
-                                                            }
-                                                        }}
-                                                        placeholder="Masukkan email baru..."
-                                                        className="flex-1 bg-white border border-outline-variant/50 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-lg px-3 py-2 text-sm text-primary transition-colors outline-none"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleAddEmail}
-                                                        disabled={!newEmail.trim()}
-                                                        className="bg-secondary/10 text-secondary hover:bg-secondary/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                                    >
-                                                        <IconRenderer name="add" className="text-[18px]" />
-                                                        Tambah
-                                                    </button>
-                                                </div>
+                                                {canEditSettings && (
+                                                    <div className="flex gap-2 mt-2">
+                                                        <input
+                                                            type="email"
+                                                            value={newEmail}
+                                                            onChange={(e) => setNewEmail(e.target.value)}
+                                                            onKeyDown={(e) => {
+                                                                if (e.key === 'Enter') {
+                                                                    e.preventDefault();
+                                                                    handleAddEmail();
+                                                                }
+                                                            }}
+                                                            placeholder="Masukkan email baru..."
+                                                            className="flex-1 bg-white border border-outline-variant/50 focus:border-secondary focus:ring-1 focus:ring-secondary/20 rounded-lg px-3 py-2 text-sm text-primary transition-colors outline-none"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={handleAddEmail}
+                                                            disabled={!newEmail.trim()}
+                                                            className="bg-secondary/10 text-secondary hover:bg-secondary/20 px-4 py-2 rounded-lg text-sm font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                                                        >
+                                                            <IconRenderer name="add" className="text-[18px]" />
+                                                            Tambah
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <p className="text-[11px] text-on-surface-variant mt-2">
@@ -360,14 +379,21 @@ export default function Index({ settings, flash }) {
 
                     {/* Unified Footer */}
                     <div className="p-4 sm:p-6 bg-surface-bright border-t border-outline-variant/50 flex justify-end">
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="w-full sm:w-auto bg-primary text-white px-8 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow disabled:opacity-50 active:scale-[0.98]"
-                        >
-                            <IconRenderer name="save" className="text-[20px] sm:text-[18px]" />
-                            Simpan Pengaturan
-                        </button>
+                        {canEditSettings ? (
+                            <button
+                                type="submit"
+                                disabled={processing}
+                                className="w-full sm:w-auto bg-primary text-white px-8 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow disabled:opacity-50 active:scale-[0.98]"
+                            >
+                                <IconRenderer name="save" className="text-[20px] sm:text-[18px]" />
+                                Simpan Pengaturan
+                            </button>
+                        ) : (
+                            <div className="w-full sm:w-auto bg-surface-container-low text-on-surface-variant border border-outline-variant/40 px-8 py-3 sm:py-2.5 rounded-lg font-semibold text-sm flex items-center justify-center gap-2">
+                                <IconRenderer name="lock" className="text-[18px]" />
+                                Mode Lihat Saja (Read-Only)
+                            </div>
+                        )}
                     </div>
                 </form>
             </div>

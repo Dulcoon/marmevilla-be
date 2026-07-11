@@ -228,7 +228,7 @@
                 <!-- Extra Charge -->
                 <tr class="row-odd">
                     <td class="td-left">Service Charge (Extra Guests: {{ $booking->extra_guests }})</td>
-                    <td>{{ $booking->extra_guests > 0 ? $nights : '-' }}</td>
+                    <td>{{ $booking->extra_guests > 0 ? '1' : '-' }}</td>
                     <td>0</td>
                     <td class="td-right">IDR. {{ number_format($booking->extra_charge_total, 0, ',', '.') }}</td>
                 </tr>

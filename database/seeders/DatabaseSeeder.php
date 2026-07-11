@@ -15,17 +15,19 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Admin Marmevilla',
-            'email' => 'admin@marmevilla.com',
-            'password' => 'admin123',
-        ]);
+        // Create default admin user (role assigned by RoleAndPermissionSeeder)
+        User::firstOrCreate(
+            ['email' => 'admin@marmevilla.com'],
+            [
+                'name' => 'Admin Marmevilla',
+                'password' => 'admin123',
+            ]
+        );
 
         $this->call([
             VillaSeeder::class,
             VillaFacilitySeeder::class,
+            RoleAndPermissionSeeder::class,
         ]);
     }
 }

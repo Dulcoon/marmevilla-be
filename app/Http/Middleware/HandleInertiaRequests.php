@@ -33,14 +33,19 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user(),
+                'user' => fn () => $request->user() ? [
+                    ...$request->user()->only(['id', 'name', 'email', 'last_login_at']),
+                    'roles'          => $request->user()->getRoleNames(),
+                    'is_superadmin'  => $request->user()->hasRole('superadmin'),
+                    'permissions'    => $request->user()->getAllPermissions()->pluck('name'),
+                ] : null,
                 'unreadNotifications' => fn () => $request->user() ? $request->user()->unreadNotifications()->latest()->take(10)->get() : [],
                 'unreadMessagesCount' => fn () => $request->user() ? Contact::where('is_read', false)->count() : 0,
-                'unreadMessages' => fn () => $request->user() ? Contact::where('is_read', false)->latest()->take(10)->get() : [],
+                'unreadMessages'      => fn () => $request->user() ? Contact::where('is_read', false)->latest()->take(10)->get() : [],
             ],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
-                'error' => fn () => $request->session()->get('error'),
+                'error'   => fn () => $request->session()->get('error'),
                 'warning' => fn () => $request->session()->get('warning'),
             ],
         ];

@@ -2,6 +2,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 
 function StarDisplay({ rating }) {
     return (
@@ -161,6 +162,8 @@ function ReviewModal({ isOpen, onClose, reviewToEdit }) {
 
 export default function ReviewIndex({ reviews, publishedCount, maxPublished }) {
     const { flash } = usePage().props;
+    const { can } = usePermission();
+    const canManageReviews = can('manage reviews');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [reviewToEdit, setReviewToEdit] = useState(null);
 
@@ -253,12 +256,13 @@ export default function ReviewIndex({ reviews, publishedCount, maxPublished }) {
                                     <div className="flex items-start pt-1 shrink-0">
                                         <button
                                             onClick={() => handleTogglePublish(review)}
+                                            disabled={!canManageReviews}
                                             title={review.is_published ? 'Sembunyikan dari beranda' : 'Tampilkan di beranda'}
                                             className={`relative w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all ${
                                                 review.is_published
                                                     ? 'bg-amber-500 border-amber-500 text-white'
                                                     : 'border-outline hover:border-primary'
-                                            }`}
+                                            } ${!canManageReviews ? 'opacity-60 cursor-not-allowed' : ''}`}
                                         >
                                             {review.is_published && (
                                                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
@@ -295,22 +299,24 @@ export default function ReviewIndex({ reviews, publishedCount, maxPublished }) {
                                     </div>
 
                                     {/* Actions */}
-                                    <div className="flex sm:flex-col gap-2 items-center shrink-0">
-                                        <button
-                                            onClick={() => openEditModal(review)}
-                                            className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors"
-                                            title="Edit ulasan"
-                                        >
-                                            <IconRenderer name="edit" className="text-[18px]" />
-                                        </button>
-                                        <button
-                                            onClick={() => handleDelete(review)}
-                                            className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            title="Hapus ulasan"
-                                        >
-                                            <IconRenderer name="delete" className="text-[18px]" />
-                                        </button>
-                                    </div>
+                                    {canManageReviews && (
+                                        <div className="flex sm:flex-col gap-2 items-center shrink-0">
+                                            <button
+                                                onClick={() => openEditModal(review)}
+                                                className="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-lg transition-colors"
+                                                title="Edit ulasan"
+                                            >
+                                                <IconRenderer name="edit" className="text-[18px]" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(review)}
+                                                className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Hapus ulasan"
+                                            >
+                                                <IconRenderer name="delete" className="text-[18px]" />
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>

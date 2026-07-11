@@ -1,25 +1,26 @@
 import { Link, usePage } from '@inertiajs/react';
 import { IconRenderer } from '@/utils/icon-mapper';
+import { usePermission } from '@/hooks/usePermission';
 
 export default function AdminSidebar({ isOpen, onClose }) {
-    const { url } = usePage();
+    const { url, props } = usePage();
+    const isSuperadmin = props.auth?.user?.is_superadmin ?? false;
+    const { can } = usePermission();
 
     const menuItems = [
-        { name: 'Dashboard', icon: 'dashboard', href: route('dashboard'), active: url.startsWith('/dashboard') },
-        { name: 'Kelola Villa', icon: 'villa', href: route('admin.villas.index'), active: url.startsWith('/admin/villas') },
-        { name: 'Aturan Harga', icon: 'payments', href: route('admin.pricing.index'), active: url.startsWith('/admin/pricing') },
-        { name: 'Blokir Tanggal', icon: 'event_busy', href: route('admin.blocked-dates.index'), active: url.startsWith('/admin/blocked-dates') },
-        { name: 'Voucher', icon: 'confirmation_number', href: route('admin.vouchers.index'), active: url.startsWith('/admin/vouchers') },
-        { name: 'Reservasi', icon: 'calendar_month', href: route('admin.reservations.index'), active: url.startsWith('/admin/reservations') },
-        { name: 'Ulasan Tamu', icon: 'rate_review', href: route('admin.reviews.index'), active: url.startsWith('/admin/reviews') },
-        { name: 'Laporan', icon: 'analytics', href: '#', active: false },
-    ];
-
+        { name: 'Dashboard', icon: 'dashboard', href: route('dashboard'), active: url.startsWith('/dashboard'), show: true },
+        { name: 'Kelola Villa', icon: 'villa', href: route('admin.villas.index'), active: url.startsWith('/admin/villas'), show: can('view villas') },
+        { name: 'Aturan Harga', icon: 'payments', href: route('admin.pricing.index'), active: url.startsWith('/admin/pricing'), show: can('view pricing') },
+        { name: 'Blokir Tanggal', icon: 'event_busy', href: route('admin.blocked-dates.index'), active: url.startsWith('/admin/blocked-dates'), show: can('view blocked-dates') },
+        { name: 'Voucher', icon: 'confirmation_number', href: route('admin.vouchers.index'), active: url.startsWith('/admin/vouchers'), show: can('view vouchers') },
+        { name: 'Reservasi', icon: 'calendar_month', href: route('admin.reservations.index'), active: url.startsWith('/admin/reservations'), show: can('view reservations') },
+        { name: 'Ulasan Tamu', icon: 'rate_review', href: route('admin.reviews.index'), active: url.startsWith('/admin/reviews'), show: can('view reviews') },
+        { name: 'Kotak Masuk', icon: 'mail', href: route('admin.contacts.index'), active: url.startsWith('/admin/contacts'), show: can('view contacts') },
+    ].filter(item => item.show);
 
     const footerItems = [
-        { name: 'Pengaturan', icon: 'settings', href: route('admin.settings.index'), active: url.startsWith('/admin/settings') },
-        { name: 'Pusat Bantuan', icon: 'help', href: '#', active: false },
-    ];
+        { name: 'Pengaturan', icon: 'settings', href: route('admin.settings.index'), active: url.startsWith('/admin/settings'), show: can('view settings') },
+    ].filter(item => item.show);
 
     return (
         <>
@@ -72,6 +73,52 @@ export default function AdminSidebar({ isOpen, onClose }) {
                             </span>
                         </Link>
                     ))}
+
+                    {/* Superadmin-only section */}
+                    {isSuperadmin && (
+                        <>
+                            <div className="mx-6 my-3 border-t border-white/10" />
+                            <div className="px-6 mb-1">
+                                <span className="text-[10px] uppercase tracking-widest text-on-primary/40 font-semibold">
+                                    Superadmin
+                                </span>
+                            </div>
+                            <Link
+                                href={route('admin.manage-admins.index')}
+                                className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                                    url.startsWith('/admin/manage-admins')
+                                        ? 'text-on-primary border-l-4 border-[#D4B47D] bg-primary-container/40'
+                                        : 'hover:text-on-primary hover:bg-primary-container/10'
+                                }`}
+                            >
+                                <IconRenderer 
+                                    name="manage_accounts" 
+                                    className="text-[24px] sm:text-[20px]"
+                                    style={{ fontVariationSettings: url.startsWith('/admin/manage-admins') ? "'FILL' 1" : undefined }}
+                                />
+                                <span className={`font-label-md text-base sm:text-label-md ${url.startsWith('/admin/manage-admins') ? 'text-[#D4B47D] font-semibold' : ''}`}>
+                                    Kelola Admin
+                                </span>
+                            </Link>
+                            <Link
+                                href={route('admin.manage-roles.index')}
+                                className={`flex items-center gap-3 px-6 py-3 transition-colors ${
+                                    url.startsWith('/admin/manage-roles')
+                                        ? 'text-on-primary border-l-4 border-[#D4B47D] bg-primary-container/40'
+                                        : 'hover:text-on-primary hover:bg-primary-container/10'
+                                }`}
+                            >
+                                <IconRenderer 
+                                    name="admin_panel_settings" 
+                                    className="text-[24px] sm:text-[20px]"
+                                    style={{ fontVariationSettings: url.startsWith('/admin/manage-roles') ? "'FILL' 1" : undefined }}
+                                />
+                                <span className={`font-label-md text-base sm:text-label-md ${url.startsWith('/admin/manage-roles') ? 'text-[#D4B47D] font-semibold' : ''}`}>
+                                    Kelola Role & Akses
+                                </span>
+                            </Link>
+                        </>
+                    )}
                 </nav>
 
                 {/* Secondary Navigation */}

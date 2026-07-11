@@ -2,8 +2,11 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, useForm, router } from '@inertiajs/react';
 import { useState } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 
 export default function Index({ contacts }) {
+    const { can } = usePermission();
+    const canManageContacts = can('manage contacts');
     const { delete: destroy } = useForm();
     const [selectedMessage, setSelectedMessage] = useState(null);
 
@@ -41,7 +44,7 @@ export default function Index({ contacts }) {
                 {/* Messages List Container */}
                 {contacts.data.length === 0 ? (
                     <div className="bg-white rounded-xl ghost-border ambient-shadow p-8 text-center text-on-surface-variant text-sm">
-                        <IconRenderer name="inbox" className="text-4xl mb-3 block opacity-50" />
+                        <IconRenderer name="inbox" className="text-4xl mb-3 mx-auto block opacity-50" />
                         Belum ada pesan masuk.
                     </div>
                 ) : (
@@ -98,13 +101,15 @@ export default function Index({ contacts }) {
                                             <IconRenderer name="visibility" className="text-[18px]" />
                                             Baca
                                         </button>
-                                        <button 
-                                            onClick={() => handleDelete(contact.id)}
-                                            className="px-4 py-2 text-sm font-semibold bg-error/10 text-error hover:bg-error hover:text-white rounded-lg transition-colors flex items-center justify-center"
-                                            title="Hapus"
-                                        >
-                                            <IconRenderer name="delete" className="text-[18px]" />
-                                        </button>
+                                        {canManageContacts && (
+                                            <button 
+                                                onClick={() => handleDelete(contact.id)}
+                                                className="px-4 py-2 text-sm font-semibold bg-error/10 text-error hover:bg-error hover:text-white rounded-lg transition-colors flex items-center justify-center"
+                                                title="Hapus"
+                                            >
+                                                <IconRenderer name="delete" className="text-[18px]" />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>

@@ -196,7 +196,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                     <div className="md:hidden divide-y divide-outline-variant/30">
                         {bookings.data.length === 0 && (
                             <div className="text-center py-12 text-on-surface-variant">
-                                <IconRenderer name="inbox" className="text-4xl block mb-2 text-outline" />
+                                <IconRenderer name="inbox" className="text-4xl mx-auto block mb-2 text-outline" />
                                 <p className="font-medium">Tidak ada reservasi ditemukan</p>
                                 <p className="text-xs mt-1">Coba ubah filter pencarian Anda</p>
                             </div>
@@ -272,7 +272,7 @@ export default function ReservationIndex({ bookings, villas, summary, filters })
                                 {bookings.data.length === 0 && (
                                     <tr>
                                         <td colSpan={8} className="text-center py-16 text-on-surface-variant">
-                                            <IconRenderer name="inbox" className="text-4xl block mb-2 text-outline" />
+                                            <IconRenderer name="inbox" className="text-4xl mx-auto block mb-2 text-outline" />
                                             <p className="font-medium">Tidak ada reservasi ditemukan</p>
                                             <p className="text-xs mt-1">Coba ubah filter pencarian Anda</p>
                                         </td>

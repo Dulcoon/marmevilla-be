@@ -2,11 +2,16 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import { IconRenderer } from '@/utils/icon-mapper';
 import { Head, Link, router } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
+import { usePermission } from '@/hooks/usePermission';
 
 // Custom dropdown that uses plain DOM events — no Headless UI backdrop conflict
 function VillaMenu({ villa, onDeleteClick }) {
     const [open, setOpen] = useState(false);
     const menuRef = useRef(null);
+    const { can } = usePermission();
+
+    const canEdit = can('edit villas');
+    const canDelete = can('delete villas');
 
     useEffect(() => {
         if (!open) return;
@@ -23,6 +28,8 @@ function VillaMenu({ villa, onDeleteClick }) {
             document.removeEventListener('touchstart', handleOutside, true);
         };
     }, [open]);
+
+    if (!canEdit && !canDelete) return null;
 
     return (
         <div className="relative" ref={menuRef}>
@@ -41,32 +48,36 @@ function VillaMenu({ villa, onDeleteClick }) {
 
             {open && (
                 <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-lg border border-outline-variant/40 z-50 overflow-hidden">
-                    <Link
-                        href={route('admin.villas.edit', villa.id)}
-                        className="flex items-center gap-2.5 px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
-                        onClick={() => setOpen(false)}
-                    >
-                        <IconRenderer name="edit" className="text-[18px] text-on-surface-variant" />
-                        Edit Villa
-                    </Link>
-                    <button
-                        type="button"
-                        className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-error hover:bg-error/8 transition-colors"
-                        onMouseDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            setOpen(false);
-                            // Small delay to ensure dropdown is unmounted before modal opens
-                            requestAnimationFrame(() => {
+                    {canEdit && (
+                        <Link
+                            href={route('admin.villas.edit', villa.id)}
+                            className="flex items-center gap-2.5 px-4 py-3 text-sm text-on-surface hover:bg-surface-container-low transition-colors"
+                            onClick={() => setOpen(false)}
+                        >
+                            <IconRenderer name="edit" className="text-[18px] text-on-surface-variant" />
+                            Edit Villa
+                        </Link>
+                    )}
+                    {canDelete && (
+                        <button
+                            type="button"
+                            className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-error hover:bg-error/8 transition-colors"
+                            onMouseDown={(e) => e.stopPropagation()}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setOpen(false);
+                                // Small delay to ensure dropdown is unmounted before modal opens
                                 requestAnimationFrame(() => {
-                                    onDeleteClick(villa);
+                                    requestAnimationFrame(() => {
+                                        onDeleteClick(villa);
+                                    });
                                 });
-                            });
-                        }}
-                    >
-                        <IconRenderer name="delete" className="text-[18px]" />
-                        Hapus Villa
-                    </button>
+                            }}
+                        >
+                            <IconRenderer name="delete" className="text-[18px]" />
+                            Hapus Villa
+                        </button>
+                    )}
                 </div>
             )}
         </div>
@@ -228,6 +239,10 @@ export default function Index({ villas }) {
         setDraggedIndex(null);
     };
 
+    const { can } = usePermission();
+    const canCreate = can('create villas');
+    const canEdit = can('edit villas');
+
     return (
         <AdminLayout>
             <Head title="Manajemen Villa - Admin Marme Villa" />
@@ -272,7 +287,7 @@ export default function Index({ villas }) {
                         </div>
                     ) : (
                         <div className="w-full sm:w-auto flex items-center gap-3">
-                            {villas.data.length > 1 && (
+                            {villas.data.length > 1 && canEdit && (
                                 <button
                                     type="button"
                                     onClick={startReordering}
@@ -282,13 +297,15 @@ export default function Index({ villas }) {
                                     Atur Urutan
                                 </button>
                             )}
-                            <Link 
-                                href={route('admin.villas.create')}
-                                className="flex-1 sm:flex-initial bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
-                            >
-                                <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
-                                Tambah Villa
-                            </Link>
+                            {canCreate && (
+                                <Link 
+                                    href={route('admin.villas.create')}
+                                    className="flex-1 sm:flex-initial bg-primary text-white px-6 py-3 sm:py-2.5 rounded-lg font-button text-sm sm:text-button hover:bg-primary/90 transition-colors flex items-center justify-center gap-2 ambient-shadow active:scale-[0.98]"
+                                >
+                                    <IconRenderer name="add" className="text-[20px] sm:text-[18px]" />
+                                    Tambah Villa
+                                </Link>
+                            )}
                         </div>
                     )}
                 </div>

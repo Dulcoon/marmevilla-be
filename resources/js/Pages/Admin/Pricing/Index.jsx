@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format, startOfToday } from "date-fns";
 import { id } from "date-fns/locale";
+import { usePermission } from '@/hooks/usePermission';
 
 const formatDate = (date) => {
     if (!date) return '';
@@ -16,6 +17,8 @@ const formatDate = (date) => {
     return `${year}-${month}-${day}`;
 };
 export default function Index({ villas, selectedVilla, auth }) {
+    const { can } = usePermission();
+    const canEditPricing = can('edit pricing');
     // Select Villa Dropdown
     const handleVillaChange = (e) => {
         router.get(route('admin.pricing.index'), { villa_id: e.target.value }, { preserveState: true });
@@ -120,6 +123,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         className="sr-only peer" 
                                         checked={selectedVilla.weekend_enabled}
                                         onChange={toggleWeekendPremium}
+                                        disabled={!canEditPricing}
                                     />
                                     <div className="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                 </label>
@@ -132,16 +136,19 @@ export default function Index({ villas, selectedVilla, auth }) {
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <a href={route('admin.villas.edit', selectedVilla.id)} className="text-primary bg-white border border-primary/30 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-primary/5 transition-colors inline-flex items-center gap-1">
-                                        <IconRenderer name="edit" className="text-[16px]" />
-                                        Edit
-                                    </a>
+                                    {can('edit villas') && (
+                                        <a href={route('admin.villas.edit', selectedVilla.id)} className="text-primary bg-white border border-primary/30 px-4 py-2 rounded-lg text-xs font-semibold hover:bg-primary/5 transition-colors inline-flex items-center gap-1">
+                                            <IconRenderer name="edit" className="text-[16px]" />
+                                            Edit
+                                        </a>
+                                    )}
                                     <label className="relative hidden md:inline-flex items-center cursor-pointer shrink-0">
                                         <input 
                                             type="checkbox" 
                                             className="sr-only peer" 
                                             checked={selectedVilla.weekend_enabled}
                                             onChange={toggleWeekendPremium}
+                                            disabled={!canEditPricing}
                                         />
                                         <div className="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                     </label>
@@ -150,7 +157,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                         </div>
 
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                            {/* Left Column: Add New Rule Form */}
+                            {/* Left Column: Add New Rule Form / Readonly Notice */}
                             <div className="lg:col-span-4 flex flex-col gap-6">
                                 <div className="bg-surface-container-lowest rounded-xl border border-[#E6E2D3] p-6 shadow-[0px_4px_20px_rgba(64,46,42,0.08)] flex flex-col h-full">
                                 <div className="flex items-center gap-3 mb-6 border-b border-outline-variant/30 pb-4">
@@ -162,9 +169,16 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <p className="font-label-md text-xs tracking-wider text-on-surface-variant font-normal">Prioritas 1 (Menimpa harga dasar)</p>
                                     </div>
                                 </div>
-                                <form onSubmit={submitCustomPrice} className="flex flex-col gap-5 flex-1">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface">Nama Aturan</label>
+                                {!canEditPricing ? (
+                                    <div className="flex-1 flex flex-col items-center justify-center text-center p-6 bg-surface-container-low/30 rounded-xl border border-dashed border-outline-variant">
+                                        <IconRenderer name="lock" className="text-on-surface-variant/60 text-3xl mb-2" />
+                                        <p className="text-sm font-semibold text-primary">Akses Terbatas</p>
+                                        <p className="text-xs text-on-surface-variant mt-1">Anda tidak memiliki izin untuk mengedit aturan harga khusus.</p>
+                                    </div>
+                                ) : (
+                                    <form onSubmit={submitCustomPrice} className="flex flex-col gap-5 flex-1">
+                                        <div className="flex flex-col gap-2">
+                                            <label className="font-label-md text-xs font-semibold tracking-wider text-on-surface">Nama Aturan</label>
                                         <input 
                                             type="text" 
                                             className="bg-[#F9F7F2] border-b border-[#70665E] focus:border-[#D4B47D] focus:ring-0 px-4 py-2 font-body-md rounded-t-md transition-colors" 
@@ -256,6 +270,7 @@ export default function Index({ villas, selectedVilla, auth }) {
                                         <button type="submit" disabled={processing} className="bg-primary hover:bg-primary/90 text-white font-semibold text-sm px-6 py-2 rounded-md transition-colors disabled:opacity-50">Simpan Aturan</button>
                                     </div>
                                 </form>
+                                )}
                             </div>
                         </div>
 
@@ -288,13 +303,15 @@ export default function Index({ villas, selectedVilla, auth }) {
                                                         if (start <= today && end >= today) return <span className="px-2 py-0.5 bg-[#D1E7DD] text-[#0F5132] text-[10px] font-bold rounded-md tracking-wider uppercase">Active</span>;
                                                         return <span className="px-2 py-0.5 bg-[#FDECC8] text-[#9A6B22] text-[10px] font-bold rounded-md tracking-wider uppercase">Upcoming</span>;
                                                     })()}
-                                                    <button 
-                                                        onClick={() => deleteCustomPrice(rule.id)}
-                                                        className="text-outline-variant hover:text-error transition-colors"
-                                                        title="Hapus Aturan"
-                                                    >
-                                                        <IconRenderer name="delete" className="text-[18px]" />
-                                                    </button>
+                                                    {canEditPricing && (
+                                                        <button 
+                                                            onClick={() => deleteCustomPrice(rule.id)}
+                                                            className="text-outline-variant hover:text-error transition-colors"
+                                                            title="Hapus Aturan"
+                                                        >
+                                                            <IconRenderer name="delete" className="text-[18px]" />
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </div>
                                             {/* Middle row */}
