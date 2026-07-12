@@ -4,6 +4,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import React, { useState, useEffect } from 'react';
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Drawer } from "@/components/ui/drawer";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
@@ -32,6 +33,8 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
         from: undefined,
         to: undefined
     });
+
+    const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -149,38 +152,99 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
 
                         <div className="flex flex-col gap-1">
                             <label className="block font-label-md text-label-md text-on-surface-variant mb-1">Rentang Validitas <span className="text-error">*</span></label>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <button type="button" className="w-full flex items-center gap-3 px-3 py-2 border border-outline-variant rounded-lg bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-left text-primary text-sm">
-                                        <IconRenderer name="calendar_month" className="text-[18px] text-on-surface-variant" />
-                                        <span className="flex-1 font-body-md text-primary">
-                                            {dateRange?.from ? (
-                                                dateRange.to ? (
-                                                    <>{format(dateRange.from, "d MMM yyyy", { locale: id })} - {format(dateRange.to, "d MMM yyyy", { locale: id })}</>
+                            
+                            {/* Desktop view */}
+                            <div className="hidden md:block">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <button type="button" className="w-full flex items-center gap-3 px-3 py-2 border border-outline-variant rounded-lg bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-left text-primary text-sm">
+                                            <IconRenderer name="calendar_month" className="text-[18px] text-on-surface-variant" />
+                                            <span className="flex-1 font-body-md text-primary">
+                                                {dateRange?.from ? (
+                                                    dateRange.to ? (
+                                                        <>{format(dateRange.from, "d MMM yyyy", { locale: id })} - {format(dateRange.to, "d MMM yyyy", { locale: id })}</>
+                                                    ) : (
+                                                        format(dateRange.from, "d MMM yyyy", { locale: id })
+                                                    )
                                                 ) : (
-                                                    format(dateRange.from, "d MMM yyyy", { locale: id })
-                                                )
+                                                    <span className="text-on-surface-variant/50">Pilih rentang tanggal...</span>
+                                                )}
+                                            </span>
+                                        </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent 
+                                        style={{ zIndex: 100000 }}
+                                        className="w-auto p-0 rounded-2xl bg-white border border-outline-variant/30 shadow-lg overflow-x-auto flex justify-center" 
+                                        align="start"
+                                    >
+                                        <Calendar
+                                            mode="range"
+                                            defaultMonth={dateRange?.from}
+                                            selected={dateRange}
+                                            onSelect={setDateRange}
+                                            numberOfMonths={window.innerWidth > 640 ? 2 : 1}
+                                            className="bg-white rounded-2xl"
+                                        />
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                            {/* Mobile view */}
+                            <div className="md:hidden">
+                                <button 
+                                    type="button" 
+                                    onClick={() => setIsDrawerOpen(true)}
+                                    className="w-full flex items-center gap-3 px-3 py-2 border border-outline-variant rounded-lg bg-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-left text-primary text-sm"
+                                >
+                                    <IconRenderer name="calendar_month" className="text-[18px] text-on-surface-variant" />
+                                    <span className="flex-1 font-body-md text-primary">
+                                        {dateRange?.from ? (
+                                            dateRange.to ? (
+                                                <>{format(dateRange.from, "d MMM yyyy", { locale: id })} - {format(dateRange.to, "d MMM yyyy", { locale: id })}</>
                                             ) : (
-                                                <span className="text-on-surface-variant/50">Pilih rentang tanggal...</span>
-                                            )}
-                                        </span>
-                                    </button>
-                                </PopoverTrigger>
-                                <PopoverContent 
-                                    style={{ zIndex: 100000 }}
-                                    className="w-auto p-0 rounded-2xl bg-white border border-outline-variant/30 shadow-lg overflow-x-auto flex justify-center" 
-                                    align="start"
+                                                format(dateRange.from, "d MMM yyyy", { locale: id })
+                                            )
+                                        ) : (
+                                            <span className="text-on-surface-variant/50">Pilih rentang tanggal...</span>
+                                        )}
+                                    </span>
+                                </button>
+                                <Drawer 
+                                    isOpen={isDrawerOpen} 
+                                    onClose={() => setIsDrawerOpen(false)} 
+                                    title="Pilih Validitas Voucher"
+                                    footer={
+                                        <>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    setDateRange({ from: undefined, to: undefined });
+                                                }} 
+                                                className="flex-1 py-3 text-sm font-semibold text-on-surface-variant bg-surface-container-low hover:bg-surface-variant border border-outline-variant/40 rounded-full transition-colors"
+                                            >
+                                                Reset
+                                            </button>
+                                            <button 
+                                                type="button"
+                                                onClick={() => setIsDrawerOpen(false)}
+                                                className="flex-1 py-3 text-sm font-semibold bg-primary text-white rounded-full hover:bg-primary/90 transition-colors"
+                                            >
+                                                Pilih Tanggal
+                                            </button>
+                                        </>
+                                    }
                                 >
                                     <Calendar
                                         mode="range"
-                                        defaultMonth={dateRange?.from}
+                                        defaultMonth={dateRange?.from || new Date()}
                                         selected={dateRange}
                                         onSelect={setDateRange}
-                                        numberOfMonths={window.innerWidth > 640 ? 2 : 1}
-                                        className="bg-white rounded-2xl"
+                                        numberOfMonths={24}
+                                        className="bg-white rounded-2xl [&_.rdp-months]:flex-col [&_.rdp-months]:gap-8"
                                     />
-                                </PopoverContent>
-                            </Popover>
+                                </Drawer>
+                            </div>
+
                             {errors.start_date && <p className="text-error text-xs mt-1">{errors.start_date}</p>}
                             {errors.end_date && <p className="text-error text-xs mt-1">{errors.end_date}</p>}
                         </div>

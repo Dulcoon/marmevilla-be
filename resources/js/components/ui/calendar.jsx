@@ -10,7 +10,7 @@ import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
+  showOutsideDays = false,
   captionLayout = "label",
   buttonVariant = "ghost",
   locale,
@@ -24,7 +24,7 @@ function Calendar({
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={cn(
-        "group/calendar bg-background p-3 [--cell-radius:var(--radius-md)] [--cell-size:--spacing(8)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
+        "w-full group/calendar bg-background p-3 [--cell-radius:var(--radius-md)] [--cell-size:2.8rem] md:[--cell-size:--spacing(8)] in-data-[slot=card-content]:bg-transparent in-data-[slot=popover-content]:bg-transparent",
         String.raw`rtl:**:[.rdp-button\_next>svg]:rotate-180`,
         String.raw`rtl:**:[.rdp-button\_previous>svg]:rotate-180`,
         className
@@ -37,8 +37,8 @@ function Calendar({
         ...formatters,
       }}
       classNames={{
-        root: cn("w-fit", defaultClassNames.root),
-        months: cn("relative flex flex-col gap-4 md:flex-row", defaultClassNames.months),
+        root: cn("w-full md:w-fit", defaultClassNames.root),
+        months: cn("relative flex flex-col gap-4 md:flex-row w-full", defaultClassNames.months),
         month: cn("flex w-full flex-col gap-4", defaultClassNames.month),
         nav: cn(
           "absolute inset-x-0 top-0 flex w-full items-center justify-between gap-1",
@@ -87,7 +87,7 @@ function Calendar({
           defaultClassNames.week_number
         ),
         day: cn(
-          "group/day relative aspect-square h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
+          "group/day relative h-full w-full select-none p-0 text-center [&:first-child[data-selected=true]_button]:rounded-l-md [&:last-child[data-selected=true]_button]:rounded-r-md",
           defaultClassNames.day
         ),
         range_start: cn("bg-[#D4B47D]/20 rounded-l-md", defaultClassNames.range_start),
@@ -169,7 +169,7 @@ function CalendarDayButton({
       data-range-end={modifiers.range_end}
       data-range-middle={modifiers.range_middle}
       className={cn(
-        "data-[selected-single=true]:bg-[#402E2A] data-[selected-single=true]:text-white data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-[#402E2A] data-[range-start=true]:bg-[#402E2A] data-[range-start=true]:text-white data-[range-end=true]:bg-[#402E2A] data-[range-end=true]:text-white flex aspect-square h-auto w-full min-w-8 flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 [&>span]:text-xs [&>span]:opacity-70 hover:bg-[#F9F7F2]",
+        "data-[selected-single=true]:bg-[#402E2A] data-[selected-single=true]:text-white data-[range-middle=true]:bg-transparent data-[range-middle=true]:text-[#402E2A] data-[range-start=true]:bg-[#402E2A] data-[range-start=true]:text-white data-[range-end=true]:bg-[#402E2A] data-[range-end=true]:text-white flex h-14 md:h-8 aspect-auto md:aspect-square w-full min-w-(--cell-size) flex-col gap-1 font-normal leading-none data-[range-end=true]:rounded-md data-[range-middle=true]:rounded-none data-[range-start=true]:rounded-md group-data-[focused=true]/day:relative group-data-[focused=true]/day:z-10 [&>span]:text-xs [&>span]:opacity-70 hover:bg-[#F9F7F2]",
         defaultClassNames.day,
         className
       )}

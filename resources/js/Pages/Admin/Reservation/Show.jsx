@@ -6,6 +6,7 @@ import Modal from '@/Components/Modal';
 import SecondaryButton from '@/Components/SecondaryButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { Calendar } from '@/components/ui/calendar';
+import { Drawer } from '@/components/ui/drawer';
 import { differenceInDays, format, parseISO } from 'date-fns';
 import { id } from 'date-fns/locale';
 
@@ -51,6 +52,7 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
     });
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
     const [dateRange, setDateRange] = useState({
         from: booking.check_in ? parseISO(booking.check_in) : undefined,
         to: booking.check_out ? parseISO(booking.check_out) : undefined,
@@ -72,13 +74,20 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
             to: booking.check_out ? parseISO(booking.check_out) : undefined,
         });
         dateForm.clearErrors();
-        setIsEditModalOpen(true);
+        if (window.innerWidth < 768) {
+            setIsDrawerOpen(true);
+        } else {
+            setIsEditModalOpen(true);
+        }
     };
 
     const handleDateSubmit = (e) => {
         e.preventDefault();
         dateForm.patch(route('admin.reservations.update-dates', booking.id), {
-            onSuccess: () => setIsEditModalOpen(false),
+            onSuccess: () => {
+                setIsEditModalOpen(false);
+                setIsDrawerOpen(false);
+            },
         });
     };
     
@@ -477,6 +486,55 @@ export default function ReservationShow({ booking, bookedDates = [] }) {
                     </form>
                 </div>
             </Modal>
+
+            <Drawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
+                title="Ubah Tanggal Reservasi"
+                footer={
+                    <>
+                        <button 
+                            type="button"
+                            onClick={() => setIsDrawerOpen(false)}
+                            className="flex-1 py-3 text-sm font-semibold text-on-surface-variant bg-surface-container-low hover:bg-surface-variant border border-outline-variant/40 rounded-full transition-colors"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={handleDateSubmit}
+                            disabled={!isDurationValid || dateForm.processing}
+                            className="flex-1 py-3 text-sm font-semibold bg-[#402E2A] text-white rounded-full hover:bg-[#402E2A]/90 transition-colors disabled:opacity-50"
+                        >
+                            {dateForm.processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                        </button>
+                    </>
+                }
+            >
+                <div className="space-y-4">
+                    <Calendar
+                        mode="range"
+                        selected={dateRange}
+                        onSelect={setDateRange}
+                        numberOfMonths={24}
+                        locale={id}
+                        disabled={[
+                            { before: new Date() },
+                            ...bookedDates.map(dateStr => parseISO(dateStr))
+                        ]}
+                        className="bg-white rounded-2xl [&_.rdp-months]:flex-col [&_.rdp-months]:gap-8"
+                    />
+
+                    {!isDurationValid && dateRange?.from && dateRange?.to && (
+                        <p className="text-sm text-red-600 text-center bg-red-50 p-3 rounded-xl border border-red-200">
+                            Durasi yang dipilih ({selectedNights} malam) tidak sama dengan pesanan awal ({originalNights} malam).
+                        </p>
+                    )}
+                    
+                    {dateForm.errors.check_in && <p className="text-sm text-red-600">{dateForm.errors.check_in}</p>}
+                    {dateForm.errors.check_out && <p className="text-sm text-red-600">{dateForm.errors.check_out}</p>}
+                </div>
+            </Drawer>
         </AdminLayout >
     );
 }

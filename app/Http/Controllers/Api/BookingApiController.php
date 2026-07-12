@@ -187,6 +187,61 @@ class BookingApiController extends Controller
         ]);
     }
 
+    public function dailyPrices(Request $request, $slug)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = Carbon::parse($request->start_date);
+        $endDate = Carbon::parse($request->end_date);
+
+        // Max 62 days (roughly 2 months) to prevent abuse
+        if ($startDate->diffInDays($endDate) > 62) {
+            return response()->json(['status' => 'error', 'message' => 'Date range too large. Maximum 62 days.'], 400);
+        }
+
+        $villa = Villa::where('slug', $slug)->firstOrFail();
+
+        $customPrices = $villa->customPrices()
+            ->where('end_date', '>=', $startDate->format('Y-m-d'))
+            ->where('start_date', '<=', $endDate->format('Y-m-d'))
+            ->get();
+
+        $period = CarbonPeriod::create($startDate, $endDate);
+        $prices = [];
+
+        foreach ($period as $date) {
+            $currentPrice = $villa->base_price;
+            $isWeekend = $date->isFriday() || $date->isSaturday();
+            $rateType = 'standard';
+
+            if ($villa->weekend_enabled && $isWeekend && $villa->weekend_price) {
+                $currentPrice = $villa->weekend_price;
+                $rateType = 'weekend';
+            }
+
+            foreach ($customPrices as $cp) {
+                if ($date->between(Carbon::parse($cp->start_date), Carbon::parse($cp->end_date))) {
+                    $currentPrice = $cp->custom_price;
+                    $rateType = 'custom';
+                    break;
+                }
+            }
+
+            $prices[$date->format('Y-m-d')] = [
+                'price' => (int) $currentPrice,
+                'type' => $rateType,
+            ];
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $prices,
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([

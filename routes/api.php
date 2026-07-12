@@ -19,6 +19,7 @@ Route::get('/villas', [VillaApiController::class, 'index'])->middleware('throttl
 Route::get('/villas/lite', [VillaApiController::class, 'lite'])->middleware('throttle:60,1');
 Route::get('/villas/{slug}', [VillaApiController::class, 'show'])->middleware('throttle:60,1');
 Route::get('/villas/{slug}/booked-dates', [BookingApiController::class, 'getBookedDates'])->middleware('throttle:60,1');
+Route::get('/villas/{slug}/daily-prices', [BookingApiController::class, 'dailyPrices'])->middleware('throttle:30,1');
 Route::post('/check-availability', [BookingApiController::class, 'checkAvailability'])->middleware('throttle:20,1');
 Route::get('/bookings/status', [BookingApiController::class, 'showStatus'])->middleware('throttle:30,1');
 Route::post('/bookings', [BookingApiController::class, 'store'])->middleware('throttle:20,1');
