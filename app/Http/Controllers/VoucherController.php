@@ -41,6 +41,7 @@ class VoucherController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['code'] = strtoupper($validated['code']);
 
         Voucher::create($validated);
 
@@ -59,6 +60,7 @@ class VoucherController extends Controller
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['code'] = strtoupper($validated['code']);
 
         $voucher->update($validated);
 

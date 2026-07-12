@@ -194,7 +194,12 @@ class BookingController extends Controller
             return back()->with('error', 'Tidak dapat membatalkan reservasi yang sedang/sudah berlangsung.');
         }
 
+        $wasConfirmed = $booking->booking_status === 'confirmed';
         $booking->update(['booking_status' => 'cancelled']);
+
+        if ($wasConfirmed && $booking->voucher_id) {
+            $booking->voucher()->decrement('used_count');
+        }
 
         return back()->with('success', 'Reservasi berhasil dibatalkan.');
     }

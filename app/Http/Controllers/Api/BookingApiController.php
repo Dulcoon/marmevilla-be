@@ -95,7 +95,7 @@ class BookingApiController extends Controller
 
         // Check if booked
         $hasBooking = Booking::where('villa_id', $villa->id)
-            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->whereIn('booking_status', ['confirmed', 'pending', 'checked_in'])
             ->where(function ($query) use ($request) {
                 // A booking overlaps if its check_in is BEFORE the new check_out
                 // AND its check_out is AFTER the new check_in
@@ -119,7 +119,8 @@ class BookingApiController extends Controller
         $discount = 0;
         $voucherId = null;
         if ($request->voucher_code) {
-            $voucher = Voucher::where('code', $request->voucher_code)
+            $voucherCode = strtoupper($request->voucher_code);
+            $voucher = Voucher::where('code', $voucherCode)
                 ->where('is_active', true)
                 ->where('start_date', '<=', now())
                 ->where('end_date', '>=', now())
@@ -153,9 +154,9 @@ class BookingApiController extends Controller
     {
         $villa = Villa::where('slug', $slug)->firstOrFail();
 
-        // Get all pending and confirmed bookings from today onwards
+        // Get all pending, confirmed, and checked_in bookings from today onwards
         $bookings = Booking::where('villa_id', $villa->id)
-            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->whereIn('booking_status', ['confirmed', 'pending', 'checked_in'])
             ->where('check_out', '>', today())
             ->get();
 
@@ -265,7 +266,7 @@ class BookingApiController extends Controller
 
                 // 1. Re-validate availability inside transaction
                 $hasBooking = Booking::where('villa_id', $villa->id)
-                    ->whereIn('booking_status', ['confirmed', 'pending'])
+                    ->whereIn('booking_status', ['confirmed', 'pending', 'checked_in'])
                     ->where(function ($query) use ($request) {
                         $query->where('check_in', '<', $request->check_out)
                               ->where('check_out', '>', $request->check_in);
@@ -461,13 +462,14 @@ class BookingApiController extends Controller
             }
 
         } catch (\Exception $e) {
-            // Booking tetap disimpan, status diubah jadi payment_error
+            // Booking tetap disimpan, status diubah jadi cancelled
             if ($booking) {
                 try {
                     $booking->update([
-                        'booking_status' => 'payment_error',
-                        'notes' => 'Gagal mendapatkan token pembayaran: ' . $e->getMessage()
+                        'payment_status' => 'failed',
+                        'booking_status' => 'cancelled'
                     ]);
+                    Log::error("BookingApiController: Gagal mendapatkan token pembayaran untuk booking {$booking->booking_code}: " . $e->getMessage());
 
                     // Notifikasi in-app ke semua admin
                     Notification::send(User::all(), new PaymentErrorNotification($booking));
