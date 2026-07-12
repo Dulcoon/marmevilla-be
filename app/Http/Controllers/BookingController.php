@@ -230,7 +230,7 @@ class BookingController extends Controller
         // Check if dates are available (excluding this booking)
         $hasBooking = Booking::where('villa_id', $booking->villa_id)
             ->where('id', '!=', $booking->id)
-            ->whereIn('booking_status', ['confirmed', 'pending'])
+            ->whereIn('booking_status', ['confirmed', 'pending', 'checked_in'])
             ->where(function ($query) use ($newCheckIn, $newCheckOut) {
                 $query->where('check_in', '<', $newCheckOut->format('Y-m-d'))
                       ->where('check_out', '>', $newCheckIn->format('Y-m-d'));
