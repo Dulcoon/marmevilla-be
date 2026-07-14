@@ -118,21 +118,31 @@ class BookingApiController extends Controller
 
         $discount = 0;
         $voucherId = null;
+        $voucherError = null;
+        $voucherMinNights = 1;
+
         if ($request->voucher_code) {
             $voucherCode = strtoupper($request->voucher_code);
-            $voucher = Voucher::where('code', $voucherCode)
-                ->where('is_active', true)
-                ->where('start_date', '<=', now())
-                ->where('end_date', '>=', now())
-                ->where(function ($query) {
-                    $query->whereNull('usage_limit')
-                          ->orWhereColumn('used_count', '<', 'usage_limit');
-                })
-                ->first();
+            $voucher = Voucher::where('code', $voucherCode)->first();
 
             if ($voucher) {
-                $voucherId = $voucher->id;
-                $discount = $voucher->discount_amount;
+                $now = now();
+                $isDateValid = $voucher->is_active && 
+                               $voucher->start_date <= $now && 
+                               ($voucher->end_date === null || $voucher->end_date >= $now);
+                $isLimitValid = $voucher->usage_limit === null || $voucher->used_count < $voucher->usage_limit;
+
+                if (!$isDateValid || !$isLimitValid) {
+                    $voucherError = 'invalid_or_expired';
+                } elseif ($pricing['nights'] < $voucher->min_nights) {
+                    $voucherError = 'min_nights_not_met';
+                    $voucherMinNights = $voucher->min_nights;
+                } else {
+                    $voucherId = $voucher->id;
+                    $discount = $voucher->discount_amount;
+                }
+            } else {
+                $voucherError = 'invalid_or_expired';
             }
         }
 
@@ -145,7 +155,9 @@ class BookingApiController extends Controller
                 'pricing' => $pricing,
                 'discount' => $discount,
                 'grand_total' => $grandTotal,
-                'voucher_id' => $voucherId
+                'voucher_id' => $voucherId,
+                'voucher_error' => $voucherError,
+                'voucher_min_nights' => $voucherMinNights
             ]
         ]);
     }
@@ -296,18 +308,24 @@ class BookingApiController extends Controller
                 if ($request->voucher_code) {
                     // Normalize voucher code to uppercase for PostgreSQL case sensitivity
                     $voucherCode = strtoupper($request->voucher_code);
-                    $voucher = Voucher::where('code', $voucherCode)
-                        ->where('is_active', true)
-                        ->where('start_date', '<=', now())
-                        ->where('end_date', '>=', now())
-                        ->where(function ($query) {
-                            $query->whereNull('usage_limit')
-                                  ->orWhereColumn('used_count', '<', 'usage_limit');
-                        })
-                        ->first();
+                    $voucher = Voucher::where('code', $voucherCode)->first();
 
                     if (!$voucher) {
+                        throw new \Exception('Voucher tidak valid.');
+                    }
+
+                    $now = now();
+                    $isDateValid = $voucher->is_active && 
+                                   $voucher->start_date <= $now && 
+                                   ($voucher->end_date === null || $voucher->end_date >= $now);
+                    $isLimitValid = $voucher->usage_limit === null || $voucher->used_count < $voucher->usage_limit;
+
+                    if (!$isDateValid || !$isLimitValid) {
                         throw new \Exception('Voucher tidak valid atau kuota penggunaan sudah habis.');
+                    }
+
+                    if ($pricing['nights'] < $voucher->min_nights) {
+                        throw new \Exception("Voucher ini memerlukan minimal menginap {$voucher->min_nights} malam.");
                     }
 
                     $voucherId = $voucher->id;

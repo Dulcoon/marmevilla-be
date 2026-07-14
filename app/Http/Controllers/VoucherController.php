@@ -37,7 +37,8 @@ class VoucherController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
-            'is_active' => ['boolean']
+            'is_active' => ['boolean'],
+            'min_nights' => ['required', 'integer', 'min:1'],
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);
@@ -56,7 +57,8 @@ class VoucherController extends Controller
             'start_date' => ['required', 'date'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'usage_limit' => ['nullable', 'integer', 'min:1'],
-            'is_active' => ['boolean']
+            'is_active' => ['boolean'],
+            'min_nights' => ['required', 'integer', 'min:1'],
         ]);
 
         $validated['is_active'] = $request->boolean('is_active', true);

@@ -18,12 +18,14 @@ class Voucher extends Model
         'usage_limit',
         'used_count',
         'is_active',
+        'min_nights',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date' => 'date',
         'is_active' => 'boolean',
+        'min_nights' => 'integer',
     ];
 
     protected $appends = ['status'];

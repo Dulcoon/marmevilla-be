@@ -27,6 +27,7 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
         end_date: '',
         usage_limit: '',
         is_active: true,
+        min_nights: 1,
     });
 
     const [dateRange, setDateRange] = React.useState({
@@ -46,6 +47,7 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
                     end_date: voucherToEdit.end_date || '',
                     usage_limit: voucherToEdit.usage_limit || '',
                     is_active: voucherToEdit.is_active,
+                    min_nights: voucherToEdit.min_nights !== undefined ? voucherToEdit.min_nights : 1,
                 });
                 
                 // Initialize dateRange from existing data
@@ -56,7 +58,11 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
             } else {
                 reset();
                 const today = new Date();
-                setData('start_date', formatDate(today));
+                setData(prev => ({
+                    ...prev,
+                    start_date: formatDate(today),
+                    min_nights: 1,
+                }));
                 setDateRange({
                     from: today,
                     to: undefined
@@ -262,6 +268,20 @@ function VoucherModal({ isOpen, onClose, voucherToEdit }) {
                             {errors.usage_limit && <p className="text-error text-xs mt-1">{errors.usage_limit}</p>}
                         </div>
 
+                        <div>
+                            <label className="block font-label-md text-label-md text-on-surface-variant mb-1">Minimal Malam Menginap <span className="text-error">*</span></label>
+                            <input 
+                                type="number"
+                                className="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-colors text-primary font-body-md"
+                                placeholder="Cth: 1"
+                                min="1"
+                                required
+                                value={data.min_nights}
+                                onChange={e => setData('min_nights', e.target.value)}
+                            />
+                            {errors.min_nights && <p className="text-error text-xs mt-1">{errors.min_nights}</p>}
+                        </div>
+
                         <div className="flex items-center justify-between pt-2">
                             <div>
                                 <label className="block font-label-md text-label-md text-primary font-bold">Status Aktif</label>
@@ -460,6 +480,7 @@ export default function Index({ vouchers, stats }) {
                                         <tr className="border-b border-outline-variant/30 bg-surface-container-low/50">
                                             <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Kode</th>
                                             <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Diskon</th>
+                                            <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-center">Min. Malam</th>
                                             <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Validitas</th>
                                             <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
                                             <th className="p-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider text-right">Penggunaan</th>
@@ -471,6 +492,7 @@ export default function Index({ vouchers, stats }) {
                                             <tr key={voucher.id} className="border-b border-outline-variant/20 hover:bg-surface-container-lowest transition-colors group">
                                                 <td className="p-4 font-bold text-primary">{voucher.code}</td>
                                                 <td className="p-4 text-on-surface font-medium">{formatRupiah(voucher.discount_amount)}</td>
+                                                <td className="p-4 text-center text-on-surface font-medium">{voucher.min_nights} malam</td>
                                                 <td className="p-4 text-on-surface-variant text-xs">
                                                     {formatDate(voucher.start_date)} - {formatDate(voucher.end_date)}
                                                 </td>
@@ -537,6 +559,10 @@ export default function Index({ vouchers, stats }) {
                                             <div className="flex items-center gap-2 text-xs text-on-surface-variant">
                                                 <IconRenderer name="group" className="text-[16px]" />
                                                 Usage: {voucher.used_count} / {voucher.usage_limit || 'Unlimited'}
+                                            </div>
+                                            <div className="flex items-center gap-2 text-xs text-on-surface-variant">
+                                                <IconRenderer name="nightlight" className="text-[16px]" />
+                                                Min. Stay: {voucher.min_nights} nights
                                             </div>
                                         </div>
                                     </div>
